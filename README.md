@@ -9,6 +9,13 @@ A Dashboard for displaying interactive statistics about your Plex media library.
 - View library statistics in real-time with interactive charts and visualizations
 - Breakdowns for genres, countries, decades, directors, and cast
 
+## Docker
+
+| Registry   | Architecture | Version | Image Path                  |
+| ---------- | ------------ | ------- | --------------------------- |
+| Docker Hub | AMD64        | Latest  | `vanshady/vidva:latest`     |
+| Docker Hub | ARM64        | Latest  | `vanshady/vidva:arm-latest` |
+
 ## Prerequisites
 
 - Node.js (v18 or higher)
@@ -21,8 +28,8 @@ A Dashboard for displaying interactive statistics about your Plex media library.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/plexystats.git
-   cd plexystats
+   git clone https://github.com/yourusername/vidva.git
+   cd vidva
    ```
 
 2. Install dependencies:
