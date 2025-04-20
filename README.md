@@ -16,6 +16,18 @@ A Dashboard for displaying interactive statistics about your Plex media library.
 | Docker Hub | AMD64        | Latest  | `vanshady/vidva:latest`     |
 | Docker Hub | ARM64        | Latest  | `vanshady/vidva:arm-latest` |
 
+## Docker Instructions
+
+Pass in env:
+
+```bash
+- PLEX_SERVER_URL=your_plex_server_url # http://<Your Plex's IP Address>:32400
+- PLEX_TOKEN=your_plex_token # https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
+- PLEX_SERVER_ID=your_plex_server_id # Go to <PLEX_SERVER_URL>/identity and copy the server ID from machineIdentifier=
+```
+
+Bind port 5173 and voila!
+
 ## Prerequisites
 
 - Node.js (v18 or higher)
@@ -27,32 +39,32 @@ A Dashboard for displaying interactive statistics about your Plex media library.
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/yourusername/vidva.git
-   cd vidva
-   ```
+```bash
+git clone https://github.com/yourusername/vidva.git
+cd vidva
+```
 
 2. Install dependencies:
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
 3. Configure your Plex server:
 
-   Create a `.env` file in the root directory with:
+Create a `.env` file in the root directory with:
 
-   ```bash
-   PLEX_SERVER_URL=your_plex_server_url
-   PLEX_TOKEN=your_plex_token
-   PLEX_SERVER_ID=your_plex_server_id
-   ```
+```bash
+PLEX_SERVER_URL=your_plex_server_url
+PLEX_TOKEN=your_plex_token
+PLEX_SERVER_ID=your_plex_server_id
+```
 
 4. Start the development server:
 
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
 5. Open your browser and navigate to `http://localhost:5173`
 
