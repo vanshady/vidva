@@ -8,7 +8,7 @@ docker rm -f vidva 2>/dev/null || true
 
 # Run the container
 docker run -d \
-  -p 3000:3000 \
+  -p 5173:5173 \
   --name vidva \
   vidva
 
