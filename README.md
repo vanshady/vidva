@@ -11,10 +11,9 @@ A Dashboard for displaying interactive statistics about your Plex media library.
 
 ## Docker
 
-| Registry   | Architecture | Version | Image Path                  |
-| ---------- | ------------ | ------- | --------------------------- |
-| Docker Hub | AMD64        | Latest  | `vanshady/vidva:latest`     |
-| Docker Hub | ARM64        | Latest  | `vanshady/vidva:arm-latest` |
+| Registry   | Architecture | Version | Image Path              |
+| ---------- | ------------ | ------- | ----------------------- |
+| Docker Hub | AMD64        | Latest  | `vanshady/vidva:latest` |
 
 ## Docker Instructions
 
