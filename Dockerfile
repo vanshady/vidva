@@ -4,13 +4,15 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package*.json /app/
 
 # Install all dependencies (including devDependencies) for building
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy source code and configuration files
+COPY ./src /app/src
+COPY ./public /app/public
+COPY ./vite.config.ts ./tsconfig*.json ./eslint.config.js ./postcss.config.cjs ./index.html /app/
 
 # Build the application
 RUN npm run build

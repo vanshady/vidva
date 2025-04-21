@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 
-const PLEX_SERVER_URL = import.meta.env.PLEX_SERVER_URL
-const PLEX_TOKEN = import.meta.env.PLEX_TOKEN
-export const PLEX_SERVER_ID = import.meta.env.PLEX_SERVER_ID
+const PLEX_SERVER_URL = process.env.PLEX_SERVER_URL || import.meta.env.PLEX_SERVER_URL
+const PLEX_TOKEN = process.env.PLEX_TOKEN || import.meta.env.PLEX_TOKEN
+export const PLEX_SERVER_ID = process.env.PLEX_SERVER_ID || import.meta.env.PLEX_SERVER_ID
 
 export interface PlexMediaItem {
   ratingKey: string
