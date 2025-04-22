@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { PlexMediaItemsProps } from '../../types/stats'
 import { Text, SimpleGrid, Button, Center, Avatar, Stack, Loader } from '@mantine/core'
 import { StatsTitle } from '../common/StatsTitle'
+import { useMediaQuery } from '@mantine/hooks'
 
 interface PersonStatsProps extends PlexMediaItemsProps {
   title: string
@@ -21,6 +22,9 @@ interface PersonStatsProps extends PlexMediaItemsProps {
 }
 
 export const PersonStats = ({ title, type, data, isLoading, error, useDetails }: PersonStatsProps) => {
+  // If > md use 10 or else use 8
+  const isAtLeastMd = useMediaQuery('(min-width: 62em)')
+
   const [visibleCount, setVisibleCount] = useState(10)
 
   if (isLoading) {
@@ -35,9 +39,15 @@ export const PersonStats = ({ title, type, data, isLoading, error, useDetails }:
   }
   if (error) return <Text c="red">Error loading {title.toLowerCase()}: {error.message}</Text>
 
-  const visibleItems = data?.slice(0, visibleCount) || []
   const hasMore = data && data.length > visibleCount
-
+  const getVisibleItems = () => {
+    const visibleItems = data?.slice(0, visibleCount) || []
+    if (visibleItems.length === 10 && !isAtLeastMd) {
+      return visibleItems.slice(0, 8)
+    } else {
+      return visibleItems
+    }
+  }
   const loadMore = () => {
     setVisibleCount(prev => prev + 40)
   }
@@ -46,7 +56,7 @@ export const PersonStats = ({ title, type, data, isLoading, error, useDetails }:
     <div>
       <StatsTitle title={title} />
       <SimpleGrid cols={{ base: 2, sm: 4, md: 5 }} spacing="sm" verticalSpacing="lg">
-        {visibleItems.map((item) => (
+        {getVisibleItems().map((item) => (
           <PersonItem
             key={item.name}
             name={item.name}
