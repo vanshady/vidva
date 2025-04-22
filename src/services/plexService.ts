@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { notifications } from '@mantine/notifications'
 
-const PLEX_SERVER_URL = import.meta.env.VITE_PLEX_SERVER_URL
-const PLEX_TOKEN = import.meta.env.VITE_PLEX_TOKEN
+export const PLEX_SERVER_URL = import.meta.env.VITE_PLEX_SERVER_URL
+export const PLEX_TOKEN = import.meta.env.VITE_PLEX_TOKEN
 export const PLEX_SERVER_ID = import.meta.env.VITE_PLEX_SERVER_ID
 
 export interface PlexMediaItem {

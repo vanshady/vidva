@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { PlexMediaItem, fetchPlexAPI, PLEX_SERVER_ID } from '../services/plexService'
+import { PlexMediaItem, fetchPlexAPI, PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN } from '../services/plexService'
 import { Container, Title, Text, SimpleGrid, Paper, Image, Stack, Group, Button, Center, Loader } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
@@ -122,29 +122,32 @@ export const PersonMovies = ({ type }: PersonMoviesProps) => {
       </Group>
 
       <SimpleGrid cols={{ base: 2, sm: 4, md: 5, lg: 6 }} spacing="md">
-        {movies.map((movie) => (
-          <Paper
-            key={movie.ratingKey}
-            p="md"
-            radius="md"
-            style={{ cursor: 'pointer' }}
-            onClick={() => window.open(`https://app.plex.tv/desktop/#!/server/${PLEX_SERVER_ID}/details?key=%2Flibrary%2Fmetadata%2F${movie.ratingKey}`, '_blank')}
-          >
-            <Stack gap="xs">
-              <Image
-                src={`${import.meta.env.PLEX_SERVER_URL}${movie.thumb}?X-Plex-Token=${import.meta.env.PLEX_TOKEN}`}
-                fallbackSrc="https://placehold.co/400x600?text=No+Poster"
-                height={300}
-                radius="md"
-                alt={movie.title}
-              />
-              <Text fw={500} size="sm" ta="center">{movie.title}</Text>
-              {movie.year && (
-                <Text size="xs" c="dimmed" ta="center">{movie.year}</Text>
-              )}
-            </Stack>
-          </Paper>
-        ))}
+        {movies.map((movie) => {
+          console.log(`${PLEX_SERVER_URL}${movie.thumb}`);
+          return (
+            <Paper
+              key={movie.ratingKey}
+              p="md"
+              radius="md"
+              style={{ cursor: 'pointer' }}
+              onClick={() => window.open(`https://app.plex.tv/desktop/#!/server/${PLEX_SERVER_ID}/details?key=%2Flibrary%2Fmetadata%2F${movie.ratingKey}`, '_blank')}
+            >
+              <Stack gap="xs">
+                <Image
+                  src={`${PLEX_SERVER_URL}${movie.thumb}?X-Plex-Token=${PLEX_TOKEN}`}
+                  fallbackSrc="https://placehold.co/400x600?text=No+Poster"
+                  height={300}
+                  radius="md"
+                  alt={movie.title}
+                />
+                <Text fw={500} size="sm" ta="center">{movie.title}</Text>
+                {movie.year && (
+                  <Text size="xs" c="dimmed" ta="center">{movie.year}</Text>
+                )}
+              </Stack>
+            </Paper>
+          )
+        })}
       </SimpleGrid>
     </Container>
   )

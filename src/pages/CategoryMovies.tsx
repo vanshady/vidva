@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { PlexMediaItem, fetchPlexAPI, PLEX_SERVER_ID } from '../services/plexService'
+import { PlexMediaItem, fetchPlexAPI, PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN } from '../services/plexService'
 import { Container, SimpleGrid, Paper, Image, Stack, Group, Button, Center, Loader, Text, Title } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
@@ -140,7 +140,7 @@ export const CategoryMovies = ({ type, title }: CategoryMoviesProps) => {
           >
             <Stack gap="xs">
               <Image
-                src={`${import.meta.env.PLEX_SERVER_URL}${movie.thumb}?X-Plex-Token=${import.meta.env.PLEX_TOKEN}`}
+                src={`${PLEX_SERVER_URL}${movie.thumb}?X-Plex-Token=${PLEX_TOKEN}`}
                 fallbackSrc="https://placehold.co/400x600?text=No+Poster"
                 height={300}
                 radius="md"
