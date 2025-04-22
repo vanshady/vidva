@@ -1,0 +1,30 @@
+{
+    # Enable automatic HTTPS
+    auto_https off
+}
+
+:5173 {
+    # Serve static files from the dist directory
+    root * /app/dist
+    file_server
+
+    # Handle client-side routing
+    try_files {path} /index.html
+
+    # Enable compression
+    encode gzip
+
+    # Security headers
+    header {
+        # Enable HSTS
+        Strict-Transport-Security "max-age=31536000;"
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # Prevent MIME-type sniffing
+        X-Content-Type-Options "nosniff"
+        # Enable XSS protection
+        X-XSS-Protection "1; mode=block"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+} 

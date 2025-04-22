@@ -22,6 +22,15 @@ export const LibraryStats = ({ items, libraryId }: LibraryStatsProps) => {
     )
   }
 
+  if (currentLibrary == null) {
+    return (
+      <div>
+        <StatsTitle title={`Library Overview`} />
+        <Text c="dimmed" ta="center">Library not found</Text>
+      </div>
+    )
+  }
+
   if (!items || items.length === 0) {
     return (
       <div>

@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { notifications } from '@mantine/notifications'
 
-const PLEX_SERVER_URL = process.env.PLEX_SERVER_URL || import.meta.env.PLEX_SERVER_URL
-const PLEX_TOKEN = process.env.PLEX_TOKEN || import.meta.env.PLEX_TOKEN
-export const PLEX_SERVER_ID = process.env.PLEX_SERVER_ID || import.meta.env.PLEX_SERVER_ID
+const PLEX_SERVER_URL = import.meta.env.VITE_PLEX_SERVER_URL
+const PLEX_TOKEN = import.meta.env.VITE_PLEX_TOKEN
+export const PLEX_SERVER_ID = import.meta.env.VITE_PLEX_SERVER_ID
 
 export interface PlexMediaItem {
   ratingKey: string
@@ -82,18 +83,36 @@ interface PlexSection {
 }
 
 export const fetchPlexAPI = async (endpoint: string) => {
-  const response = await fetch(`${PLEX_SERVER_URL}${endpoint}`, {
-    headers: {
-      'X-Plex-Token': PLEX_TOKEN,
-      'Accept': 'application/json'
+  try {
+    const response = await fetch(`${PLEX_SERVER_URL}${endpoint}`, {
+      headers: {
+        'X-Plex-Token': PLEX_TOKEN,
+        'Accept': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorMessage = `Plex API error: ${response.statusText} (${response.status})`
+      notifications.show({
+        title: 'Plex API Error',
+        message: errorMessage,
+        color: 'red',
+        autoClose: 5000
+      })
+      throw new Error(errorMessage)
     }
-  })
 
-  if (!response.ok) {
-    throw new Error(`Plex API error: ${response.statusText}`)
+    return response.json()
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    notifications.show({
+      title: 'Network Error',
+      message: `Failed to connect to Plex server: ${errorMessage}`,
+      color: 'red',
+      autoClose: 5000
+    })
+    throw error
   }
-
-  return response.json()
 }
 
 const useBaseStatistics = <T extends BaseStats>(
@@ -111,7 +130,6 @@ const useBaseStatistics = <T extends BaseStats>(
       return extractStats(items)
     },
     enabled: !!items,
-    staleTime: Infinity,
   })
 }
 
@@ -187,7 +205,7 @@ export const useDirectorDetails = (directorName: string, movieId: string) => {
         photo: director.thumb ? `${director.thumb}?width=128&height=128&minSize=1&upscale=1&X-Plex-Token=${PLEX_TOKEN}` : undefined
       }
     },
-    enabled: !!directorName && !!movieId
+    enabled: !!directorName && !!movieId,
   })
 }
 

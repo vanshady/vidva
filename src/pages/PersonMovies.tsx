@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { PlexMediaItem, fetchPlexAPI, PLEX_SERVER_ID } from '../services/plexService'
 import { Container, Title, Text, SimpleGrid, Paper, Image, Stack, Group, Button, Center, Loader } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
+import { notifications } from '@mantine/notifications'
 
 interface PersonMoviesProps {
   type: 'cast' | 'director'
@@ -27,6 +28,15 @@ export const PersonMovies = ({ type }: PersonMoviesProps) => {
       })
     },
   })
+
+  if (error) {
+    notifications.show({
+      title: 'Movies Loading Error',
+      message: `Failed to load movies for ${name}: ${error.message}`,
+      color: 'red',
+      autoClose: 5000
+    })
+  }
 
   if (isLoading) {
     return (
@@ -54,6 +64,19 @@ export const PersonMovies = ({ type }: PersonMoviesProps) => {
   if (error) {
     return (
       <Container size="xl">
+        <Group mb="xl">
+          <Button
+            variant="subtle"
+            leftSection={<IconArrowLeft size={14} />}
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </Button>
+          <Stack gap={0}>
+            <Title order={3}>{name}'s Films</Title>
+            <Text size="sm" c="dimmed">{movies?.length || 0} films</Text>
+          </Stack>
+        </Group>
         <Center h={200}>
           <Text c="red" ta="center">{error.message}</Text>
         </Center>
@@ -64,6 +87,19 @@ export const PersonMovies = ({ type }: PersonMoviesProps) => {
   if (!movies || movies.length === 0) {
     return (
       <Container size="xl">
+        <Group mb="xl">
+          <Button
+            variant="subtle"
+            leftSection={<IconArrowLeft size={14} />}
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </Button>
+          <Stack gap={0}>
+            <Title order={3}>{name}'s Films</Title>
+            <Text size="sm" c="dimmed">{movies?.length || 0} films</Text>
+          </Stack>
+        </Group>
         <Text c="dimmed" ta="center">No films found for {name}</Text>
       </Container>
     )
