@@ -1,32 +1,26 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { PlexMediaItem, fetchPlexAPI, PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN } from '../services/plexService'
+import { PlexMediaItem, PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN, useLibraryItems } from '../services/plexService'
 import { Container, Title, Text, SimpleGrid, Paper, Image, Stack, Group, Button, Center, Loader } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 
 interface PersonMoviesProps {
   type: 'cast' | 'director'
+  libraryId: string
 }
 
-export const PersonMovies = ({ type }: PersonMoviesProps) => {
+export const PersonMovies = ({ type, libraryId }: PersonMoviesProps) => {
   const { name } = useParams<{ name: string }>()
   const navigate = useNavigate()
 
-  const { data: movies = [], isLoading, error } = useQuery<PlexMediaItem[]>({
-    queryKey: ['personMovies', type, name],
-    queryFn: async () => {
-      const data = await fetchPlexAPI(`/library/sections/${1}/all`)
-      const allMovies = data.MediaContainer.Metadata as PlexMediaItem[]
+  const { data: allMovies = [], isLoading, error } = useLibraryItems(libraryId)
 
-      return allMovies.filter(movie => {
-        if (type === 'cast') {
-          return movie.Role?.some(role => role.tag === name)
-        } else {
-          return movie.Director?.some(director => director.tag === name)
-        }
-      })
-    },
+  const movies = allMovies.filter(movie => {
+    if (type === 'cast') {
+      return movie.Role?.some(role => role.tag === name)
+    } else {
+      return movie.Director?.some(director => director.tag === name)
+    }
   })
 
   if (error) {
@@ -123,7 +117,6 @@ export const PersonMovies = ({ type }: PersonMoviesProps) => {
 
       <SimpleGrid cols={{ base: 2, sm: 4, md: 5, lg: 6 }} spacing="md">
         {movies.map((movie) => {
-          console.log(`${PLEX_SERVER_URL}${movie.thumb}`);
           return (
             <Paper
               key={movie.ratingKey}

@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { PlexMediaItem, fetchPlexAPI, PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN } from '../services/plexService'
+import { PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN, useLibraryItems } from '../services/plexService'
 import { Container, SimpleGrid, Paper, Image, Stack, Group, Button, Center, Loader, Text, Title } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
@@ -8,33 +7,28 @@ import { notifications } from '@mantine/notifications'
 interface CategoryMoviesProps {
   type: 'genre' | 'country' | 'decade'
   title: string
+  libraryId: string
 }
 
-export const CategoryMovies = ({ type, title }: CategoryMoviesProps) => {
+export const CategoryMovies = ({ type, title, libraryId }: CategoryMoviesProps) => {
   const { name } = useParams<{ name: string }>()
   const navigate = useNavigate()
 
-  const { data: movies = [], isLoading, error } = useQuery<PlexMediaItem[]>({
-    queryKey: ['categoryMovies', type, name],
-    queryFn: async () => {
-      const data = await fetchPlexAPI(`/library/sections/${1}/all`)
-      const allMovies = data.MediaContainer.Metadata as PlexMediaItem[]
+  const { data: allMovies = [], isLoading, error } = useLibraryItems(libraryId)
 
-      return allMovies.filter(movie => {
-        if (!name) return false
-        if (type === 'genre') {
-          return movie.Genre?.some(genre => genre.tag === name)
-        } else if (type === 'country') {
-          return movie.Country?.some(country => country.tag === name)
-        } else {
-          // For decade, we need to check the year
-          const movieYear = Number(movie.year)
-          const movieDecade = Math.floor(movieYear / 10) * 10
-          const targetDecade = Number(name.replace('s', '')) // Remove 's' suffix before converting to number
-          return movieDecade === targetDecade
-        }
-      })
-    },
+  const movies = allMovies.filter(movie => {
+    if (!name) return false
+    if (type === 'genre') {
+      return movie.Genre?.some(genre => genre.tag === name)
+    } else if (type === 'country') {
+      return movie.Country?.some(country => country.tag === name)
+    } else {
+      // For decade, we need to check the year
+      const movieYear = Number(movie.year)
+      const movieDecade = Math.floor(movieYear / 10) * 10
+      const targetDecade = Number(name.replace('s', '')) // Remove 's' suffix before converting to number
+      return movieDecade === targetDecade
+    }
   })
 
   if (error) {

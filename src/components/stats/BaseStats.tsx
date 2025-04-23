@@ -72,7 +72,7 @@ export const BaseStats = ({ title, type, data, isLoading, error, backgroundColor
   const chartHeight = data.length * 25
 
   const handleClick = (label: string) => {
-    navigate(`/${type}/${encodeURIComponent(label)}`)
+    navigate(`/${type}/${encodeURIComponent(label)}?libraryId=${libraryId}`)
   }
 
   return (

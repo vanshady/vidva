@@ -19,9 +19,10 @@ interface PersonStatsProps extends PlexMediaItemsProps {
     data?: { photo?: string }
     isLoading: boolean
   }
+  libraryId: string
 }
 
-export const PersonStats = ({ title, type, data, isLoading, error, useDetails }: PersonStatsProps) => {
+export const PersonStats = ({ title, type, data, isLoading, error, useDetails, libraryId }: PersonStatsProps) => {
   // If > md use 10 or else use 8
   const isAtLeastMd = useMediaQuery('(min-width: 62em)')
 
@@ -64,6 +65,7 @@ export const PersonStats = ({ title, type, data, isLoading, error, useDetails }:
             movieId={item.movieId}
             useDetails={useDetails}
             type={type}
+            libraryId={libraryId}
           />
         ))}
       </SimpleGrid>
@@ -87,14 +89,15 @@ interface PersonItemProps {
     data?: { photo?: string }
     isLoading: boolean
   }
+  libraryId: string
 }
 
-const PersonItem = ({ name, count, movieId, useDetails, type }: PersonItemProps) => {
+const PersonItem = ({ name, count, movieId, useDetails, type, libraryId }: PersonItemProps) => {
   const navigate = useNavigate()
   const { data: details } = useDetails(name, movieId || '')
 
   const handleClick = () => {
-    navigate(`/${type}/${encodeURIComponent(name)}`)
+    navigate(`/${type}/${encodeURIComponent(name)}?libraryId=${libraryId}`)
   }
 
   return (

@@ -115,6 +115,20 @@ export const fetchPlexAPI = async (endpoint: string) => {
   }
 }
 
+export const fetchMetadataBatch = async (items: PlexMediaItem[]) => {
+  const batchSize = 10; // Adjust based on your needs
+  const results = [];
+
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchPromises = batch.map(item => fetchPlexAPI(`/library/metadata/${item.ratingKey}`));
+    const batchResults = await Promise.all(batchPromises);
+    results.push(...batchResults);
+  }
+
+  return results;
+}
+
 const useBaseStatistics = <T extends BaseStats>(
   items: PlexMediaItem[] | undefined,
   queryKey: string,
@@ -309,7 +323,9 @@ export const useLibraryItems = (libraryId: string) => {
     queryKey: ['libraryItems', libraryId],
     queryFn: async () => {
       const data = await fetchPlexAPI(`/library/sections/${libraryId}/all`)
-      return data.MediaContainer.Metadata as PlexMediaItem[]
+      const libraryItems = data.MediaContainer.Metadata as PlexMediaItem[]
+      const result = await fetchMetadataBatch(libraryItems || [])
+      return result.map(item => item.MediaContainer.Metadata[0]);
     },
     enabled: !!libraryId
   })

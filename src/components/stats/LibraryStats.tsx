@@ -5,13 +5,14 @@ import { StatsTitle } from '../common/StatsTitle'
 
 interface LibraryStatsProps extends PlexMediaItemsProps {
   libraryId: string
+  isLoading: boolean
 }
 
-export const LibraryStats = ({ items, libraryId }: LibraryStatsProps) => {
-  const { data: libraries, isLoading } = usePlexLibraries()
+export const LibraryStats = ({ items, libraryId, isLoading }: LibraryStatsProps) => {
+  const { data: libraries, isLoading: isPlexLibrariesLoading } = usePlexLibraries()
   const currentLibrary = libraries?.find(lib => lib.id === parseInt(libraryId))
 
-  if (isLoading) {
+  if (isLoading || isPlexLibrariesLoading) {
     return (
       <div>
         <StatsTitle title={`${currentLibrary?.name} Overview`} />
