@@ -1,6 +1,7 @@
 import { Select } from '@mantine/core'
 import { usePlexLibraries } from '../../services/plexService'
 import { notifications } from '@mantine/notifications'
+import { useEffect, useMemo } from 'react'
 
 interface LibrarySelectorProps {
   value: string
@@ -21,15 +22,20 @@ export const LibrarySelector = ({ value, onChange, onFirstLibrary }: LibrarySele
   }
 
   // Transform libraries data for Select component
-  const libraryOptions = libraries?.map(lib => ({
-    value: lib.id.toString(),
-    label: lib.name
-  })) || []
+  const libraryOptions = useMemo(() =>
+    libraries?.map(lib => ({
+      value: lib.id.toString(),
+      label: lib.name
+    })) || [],
+    [libraries]
+  )
 
-  // Call onFirstLibrary with the first library ID if available
-  if (libraryOptions.length > 0 && onFirstLibrary && !value) {
-    onFirstLibrary(libraryOptions[0].value)
-  }
+  useEffect(() => {
+    // Call onFirstLibrary with the first library ID if available
+    if (libraryOptions.length > 0 && onFirstLibrary && !value) {
+      onFirstLibrary(libraryOptions[0].value)
+    }
+  }, [libraryOptions, onFirstLibrary, value])
 
   return (
     <Select
