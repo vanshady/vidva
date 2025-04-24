@@ -21,7 +21,8 @@ interface HomePageProps {
   onLibraryChange: (value: string) => void
 }
 
-const defaultTopCastCount = import.meta.env.VITE_DEFAULT_TOP_CAST_COUNT ?? 'all'
+const VITE_DEFAULT_TOP_CAST_COUNT = import.meta.env.VITE_DEFAULT_TOP_CAST_COUNT;
+const defaultTopCastCount = (VITE_DEFAULT_TOP_CAST_COUNT == null || VITE_DEFAULT_TOP_CAST_COUNT.length == 0 || VITE_DEFAULT_TOP_CAST_COUNT === 'DEFAULT_TOP_CAST_COUNT') ? 'all' : VITE_DEFAULT_TOP_CAST_COUNT;
 
 export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) => {
   const [searchParams, setSearchParams] = useSearchParams()
