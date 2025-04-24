@@ -33,3 +33,4 @@ requirements.txt
 .github
 .vscode.example
 .env
+run-docker.sh
