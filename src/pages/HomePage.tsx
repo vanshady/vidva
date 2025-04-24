@@ -22,7 +22,17 @@ interface HomePageProps {
 }
 
 const VITE_DEFAULT_TOP_CAST_COUNT = import.meta.env.VITE_DEFAULT_TOP_CAST_COUNT;
-const defaultTopCastCount = (VITE_DEFAULT_TOP_CAST_COUNT == null || VITE_DEFAULT_TOP_CAST_COUNT.length == 0 || VITE_DEFAULT_TOP_CAST_COUNT === 'DEFAULT_TOP_CAST_COUNT') ? 'all' : VITE_DEFAULT_TOP_CAST_COUNT;
+
+const isValidTopCastCount = (value: string | undefined): boolean => {
+  if (!value) return false;
+  if (value === 'all') return true;
+  const num = parseInt(value);
+  return !isNaN(num) && num > 0;
+};
+
+const defaultTopCastCount = isValidTopCastCount(VITE_DEFAULT_TOP_CAST_COUNT)
+  ? VITE_DEFAULT_TOP_CAST_COUNT
+  : 'all';
 
 export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) => {
   const [searchParams, setSearchParams] = useSearchParams()

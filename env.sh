@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # This script replaces the environment variables in the dist folder, specifically ones starting with PLEX_ or DEFAULT_
-for prefix in "PLEX_" "DEFAULT_"
+for prefix in "PLEX_" "VIDVA_DEFAULT_"
 do
     for i in $(env | grep $prefix)
     do
