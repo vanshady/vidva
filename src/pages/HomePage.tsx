@@ -14,6 +14,7 @@ import { BaseStats } from '../components/stats/BaseStats'
 import { PersonStats } from '../components/stats/PersonStats'
 import { LibraryStats } from '../components/stats/LibraryStats'
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 interface HomePageProps {
   selectedLibrary: string
@@ -23,7 +24,26 @@ interface HomePageProps {
 const defaultTopCastCount = import.meta.env.VITE_DEFAULT_TOP_CAST_COUNT ?? 'all'
 
 export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) => {
-  const [topCastCount, setTopCastCount] = useState(defaultTopCastCount)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [topCastCount, setTopCastCount] = useState(searchParams.get('topCastCount') || defaultTopCastCount)
+
+  const handleLibraryChange = (value: string) => {
+    onLibraryChange(value)
+    updateUrlParams(value, topCastCount)
+  }
+
+  const handleTopCastCountChange = (value: string) => {
+    setTopCastCount(value)
+    updateUrlParams(selectedLibrary, value)
+  }
+
+  const updateUrlParams = (libraryId: string, castCount: string) => {
+    const params = new URLSearchParams()
+    if (libraryId) params.set('libraryId', libraryId)
+    if (castCount !== defaultTopCastCount) params.set('topCastCount', castCount)
+    setSearchParams(params)
+  }
+
   const { data: libraryItems, isLoading, error } = useLibraryItems(selectedLibrary)
 
   const { data: genreStats, isLoading: isLoadingGenreStats } = useGenreStatistics(libraryItems, selectedLibrary)
@@ -37,13 +57,13 @@ export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) =>
       <Group justify="flex-start">
         <LibrarySelector
           value={selectedLibrary}
-          onChange={(value) => onLibraryChange(value || '')}
-          onFirstLibrary={(id) => onLibraryChange(id)}
+          onChange={(value) => handleLibraryChange(value || '')}
+          onFirstLibrary={(id) => handleLibraryChange(id)}
         />
         <Select
           label="Top # of Casts to Count"
           value={topCastCount}
-          onChange={(value) => setTopCastCount(value || 'all')}
+          onChange={(value) => handleTopCastCountChange(value || 'all')}
           data={[
             { value: 'all', label: 'All Casts' },
             { value: '3', label: 'Top 3 (Plex)' },
