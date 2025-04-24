@@ -23,6 +23,7 @@ Pass in env:
 - PLEX_SERVER_URL=your_plex_server_url # http://<Your Plex's IP Address>:32400
 - PLEX_TOKEN=your_plex_token # https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
 - PLEX_SERVER_ID=your_plex_server_id # Go to <PLEX_SERVER_URL>/identity and copy the server ID from machineIdentifier=
+= DEFAULT_TOP_CAST_COUNT=4 # all or 3 (plex default) or 4 (letterboxd default) or 5 or 10
 ```
 
 Bind port 5173 and voila!
