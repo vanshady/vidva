@@ -78,6 +78,7 @@ export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) =>
         useDetails={useCastMemberDetails}
         items={libraryItems || []}
         libraryId={selectedLibrary}
+        topCastCount={topCastCount}
       />
       <BaseStats
         title="Decades"

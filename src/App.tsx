@@ -20,7 +20,16 @@ function App() {
             onLibraryChange={setSelectedLibrary}
           />
         } />
-        <Route path="/cast/:name" element={<PersonMovies type="cast" libraryId={selectedLibrary} />} />
+        <Route
+          path="/cast/:name"
+          element={
+            <PersonMovies
+              type="cast"
+              libraryId={selectedLibrary}
+              topCastCount={searchParams.get('topCastCount')}
+            />
+          }
+        />
         <Route path="/director/:name" element={<PersonMovies type="director" libraryId={selectedLibrary} />} />
         <Route path="/genre/:name" element={<CategoryMovies type="genre" title="Genre" libraryId={selectedLibrary} />} />
         <Route path="/country/:name" element={<CategoryMovies type="country" title="Country" libraryId={selectedLibrary} />} />

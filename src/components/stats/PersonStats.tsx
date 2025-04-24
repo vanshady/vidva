@@ -20,9 +20,10 @@ interface PersonStatsProps extends PlexMediaItemsProps {
     isLoading: boolean
   }
   libraryId: string
+  topCastCount?: string
 }
 
-export const PersonStats = ({ title, type, data, isLoading, error, useDetails, libraryId }: PersonStatsProps) => {
+export const PersonStats = ({ title, type, data, isLoading, error, useDetails, libraryId, topCastCount }: PersonStatsProps) => {
   // If > md use 10 or else use 8
   const isAtLeastMd = useMediaQuery('(min-width: 62em)')
 
@@ -66,6 +67,7 @@ export const PersonStats = ({ title, type, data, isLoading, error, useDetails, l
             useDetails={useDetails}
             type={type}
             libraryId={libraryId}
+            topCastCount={type === 'cast' ? topCastCount : undefined}
           />
         ))}
       </SimpleGrid>
@@ -90,14 +92,19 @@ interface PersonItemProps {
     isLoading: boolean
   }
   libraryId: string
+  topCastCount?: string
 }
 
-const PersonItem = ({ name, count, movieId, useDetails, type, libraryId }: PersonItemProps) => {
+const PersonItem = ({ name, count, movieId, useDetails, type, libraryId, topCastCount }: PersonItemProps) => {
   const navigate = useNavigate()
   const { data: details } = useDetails(name, movieId || '')
 
   const handleClick = () => {
-    navigate(`/${type}/${encodeURIComponent(name)}?libraryId=${libraryId}`)
+    const baseUrl = `/${type}/${encodeURIComponent(name)}?libraryId=${libraryId}`
+    const url = type === 'cast' && topCastCount
+      ? `${baseUrl}&topCastCount=${topCastCount}`
+      : baseUrl
+    navigate(url)
   }
 
   return (

@@ -7,9 +7,10 @@ import { notifications } from '@mantine/notifications'
 interface PersonMoviesProps {
   type: 'cast' | 'director'
   libraryId: string
+  topCastCount?: string | null
 }
 
-export const PersonMovies = ({ type, libraryId }: PersonMoviesProps) => {
+export const PersonMovies = ({ type, libraryId, topCastCount }: PersonMoviesProps) => {
   const { name } = useParams<{ name: string }>()
   const navigate = useNavigate()
 
@@ -17,6 +18,11 @@ export const PersonMovies = ({ type, libraryId }: PersonMoviesProps) => {
 
   const movies = allMovies.filter(movie => {
     if (type === 'cast') {
+      const count = topCastCount ? topCastCount : import.meta.env.VITE_DEFAULT_TOP_CAST_COUNT;
+      if (count !== 'all') {
+        const topN = parseInt(count)
+        return movie.Role?.slice(0, topN).some(role => role.tag === name)
+      }
       return movie.Role?.some(role => role.tag === name)
     } else {
       return movie.Director?.some(director => director.tag === name)
