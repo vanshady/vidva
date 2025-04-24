@@ -1,4 +1,4 @@
-import { Stack, Group } from '@mantine/core'
+import { Stack, Group, Select } from '@mantine/core'
 import { LibrarySelector } from '../components/layout/LibrarySelector'
 import {
   useLibraryItems,
@@ -13,20 +13,24 @@ import {
 import { BaseStats } from '../components/stats/BaseStats'
 import { PersonStats } from '../components/stats/PersonStats'
 import { LibraryStats } from '../components/stats/LibraryStats'
+import { useState } from 'react'
 
 interface HomePageProps {
   selectedLibrary: string
   onLibraryChange: (value: string) => void
 }
 
+const defaultTopCastCount = import.meta.env.VITE_DEFAULT_TOP_CAST_COUNT ?? 'all'
+
 export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) => {
+  const [topCastCount, setTopCastCount] = useState(defaultTopCastCount)
   const { data: libraryItems, isLoading, error } = useLibraryItems(selectedLibrary)
 
   const { data: genreStats, isLoading: isLoadingGenreStats } = useGenreStatistics(libraryItems, selectedLibrary)
   const { data: countryStats, isLoading: isLoadingCountryStats } = useCountryStatistics(libraryItems, selectedLibrary)
   const { data: decadeStats, isLoading: isLoadingDecadeStats } = useDecadeStatistics(libraryItems, selectedLibrary)
   const { data: directorStats, isLoading: isLoadingDirectorStats } = useDirectorStatistics(libraryItems, selectedLibrary)
-  const { data: castStats, isLoading: isLoadingCastStats } = useCastStatistics(libraryItems, selectedLibrary)
+  const { data: castStats, isLoading: isLoadingCastStats } = useCastStatistics(libraryItems, selectedLibrary, topCastCount)
 
   return (
     <Stack gap="xl">
@@ -35,6 +39,19 @@ export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) =>
           value={selectedLibrary}
           onChange={(value) => onLibraryChange(value || '')}
           onFirstLibrary={(id) => onLibraryChange(id)}
+        />
+        <Select
+          label="Top # of Casts to Count"
+          value={topCastCount}
+          onChange={(value) => setTopCastCount(value || 'all')}
+          data={[
+            { value: 'all', label: 'All Casts' },
+            { value: '3', label: 'Top 3 (Plex)' },
+            { value: '4', label: 'Top 4 (Letterboxd)' },
+            { value: '5', label: 'Top 5' },
+            { value: '10', label: 'Top 10' },
+          ]}
+          w={200}
         />
       </Group>
       <LibraryStats

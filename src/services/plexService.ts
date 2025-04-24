@@ -223,31 +223,37 @@ export const useDirectorDetails = (directorName: string, movieId: string) => {
   })
 }
 
-export const useCastStatistics = (items: PlexMediaItem[] | undefined, libraryId: string) => {
-  return useBaseStatistics(
-    items,
-    'castStatistics',
-    (items) => {
+export const useCastStatistics = (items: PlexMediaItem[] | undefined, libraryId: string, topCastCount: string) => {
+  return useQuery<CastStats[]>({
+    queryKey: ['castStatistics', libraryId, topCastCount],
+    queryFn: () => {
+      if (!items || items.length === 0) {
+        return []
+      }
       const castCounts = new Map<string, { count: number; movieId?: string }>()
+      const topCastCountInt = topCastCount == 'all' ? Number.MAX_SAFE_INTEGER : parseInt(topCastCount);
       items.forEach(item => {
         if (item.Role) {
-          item.Role.forEach((role: PlexRole) => {
+          const Role = item.Role;
+          for (let i = 0; i < Math.min(item.Role.length, topCastCountInt); i++) {
+            const role: PlexRole = Role[i];
+
             const existing = castCounts.get(role.tag)
             if (existing) {
               existing.count++
             } else {
               castCounts.set(role.tag, { count: 1, movieId: item.ratingKey })
             }
-          })
+          }
         }
       })
 
       return Array.from(castCounts.entries())
         .map(([name, data]) => ({ name, count: data.count, movieId: data.movieId }))
-        .sort((a, b) => b.count - a.count) as CastStats[]
+        .sort((a, b) => b.count - a.count) as CastStats[];
     },
-    libraryId
-  )
+    enabled: !!items,
+  })
 }
 
 // Add a new hook for fetching cast member details
