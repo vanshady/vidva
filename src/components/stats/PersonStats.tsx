@@ -95,15 +95,12 @@ interface PersonItemProps {
   topCastCount?: string
 }
 
-const PersonItem = ({ name, count, movieId, useDetails, type, libraryId, topCastCount }: PersonItemProps) => {
+const PersonItem = ({ name, count, movieId, useDetails, type, libraryId }: PersonItemProps) => {
   const navigate = useNavigate()
   const { data: details } = useDetails(name, movieId || '')
 
   const handleClick = () => {
-    const baseUrl = `/${type}/${encodeURIComponent(name)}?libraryId=${libraryId}`
-    const url = type === 'cast' && topCastCount
-      ? `${baseUrl}&topCastCount=${topCastCount}`
-      : baseUrl
+    const url = `/${type}/${encodeURIComponent(name)}?libraryId=${libraryId}`
     navigate(url)
   }
 

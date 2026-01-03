@@ -18,11 +18,8 @@ export const PersonMovies = ({ type, libraryId, topCastCount }: PersonMoviesProp
 
   const movies = allMovies.filter(movie => {
     if (type === 'cast') {
-      const count = topCastCount ? topCastCount : import.meta.env.VITE_DEFAULT_TOP_CAST_COUNT;
-      if (count !== 'all') {
-        const topN = parseInt(count)
-        return movie.Role?.slice(0, topN).some(role => role.tag === name)
-      }
+      // Always show all films for cast members, regardless of topCastCount setting
+      // topCastCount only affects which actors appear in the statistics list
       return movie.Role?.some(role => role.tag === name)
     } else {
       return movie.Director?.some(director => director.tag === name)
