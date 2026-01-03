@@ -10,7 +10,7 @@ interface PersonMoviesProps {
   topCastCount?: string | null
 }
 
-export const PersonMovies = ({ type, libraryId, topCastCount }: PersonMoviesProps) => {
+export const PersonMovies = ({ type, libraryId }: PersonMoviesProps) => {
   const { name } = useParams<{ name: string }>()
   const navigate = useNavigate()
 
