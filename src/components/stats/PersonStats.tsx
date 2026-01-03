@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PlexMediaItemsProps } from '../../types/stats'
 import { Text, SimpleGrid, Button, Center, Avatar, Stack, Loader } from '@mantine/core'
 import { StatsTitle } from '../common/StatsTitle'
@@ -26,8 +26,31 @@ interface PersonStatsProps extends PlexMediaItemsProps {
 export const PersonStats = ({ title, type, data, isLoading, error, useDetails, libraryId, topCastCount }: PersonStatsProps) => {
   // If > md use 10 or else use 8
   const isAtLeastMd = useMediaQuery('(min-width: 62em)')
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [visibleCount, setVisibleCount] = useState(10)
+  // Get the param key based on type
+  const visibleCountParam = type === 'cast' ? 'castsVisibleCount' : 'directorsVisibleCount'
+
+  // Initialize visibleCount from URL params or default to 10
+  const initialVisibleCount = parseInt(searchParams.get(visibleCountParam) || '10', 10)
+  const [visibleCount, setVisibleCount] = useState(initialVisibleCount)
+
+  // Update URL params when visibleCount changes
+  useEffect(() => {
+    const currentParamValue = searchParams.get(visibleCountParam)
+    const newParamValue = visibleCount > 10 ? visibleCount.toString() : null
+
+    // Only update if the value actually changed
+    if (currentParamValue !== newParamValue) {
+      const params = new URLSearchParams(searchParams)
+      if (visibleCount > 10) {
+        params.set(visibleCountParam, visibleCount.toString())
+      } else {
+        params.delete(visibleCountParam)
+      }
+      setSearchParams(params, { replace: true })
+    }
+  }, [visibleCount, visibleCountParam, searchParams, setSearchParams])
 
   if (isLoading) {
     return (
@@ -100,7 +123,10 @@ const PersonItem = ({ name, count, movieId, useDetails, type, libraryId }: Perso
   const { data: details } = useDetails(name, movieId || '')
 
   const handleClick = () => {
-    const url = `/${type}/${encodeURIComponent(name)}?libraryId=${libraryId}`
+    // Preserve current search params when navigating
+    const params = new URLSearchParams(window.location.search)
+    params.set('libraryId', libraryId)
+    const url = `/${type}/${encodeURIComponent(name)}?${params.toString()}`
     navigate(url)
   }
 

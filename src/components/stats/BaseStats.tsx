@@ -72,7 +72,11 @@ export const BaseStats = ({ title, type, data, isLoading, error, backgroundColor
   const chartHeight = data.length * 25
 
   const handleClick = (label: string) => {
-    navigate(`/${type}/${encodeURIComponent(label)}?libraryId=${libraryId}`)
+    // Preserve current search params when navigating
+    const params = new URLSearchParams(window.location.search)
+    params.set('libraryId', libraryId)
+    const url = `/${type}/${encodeURIComponent(label)}?${params.toString()}`
+    navigate(url)
   }
 
   return (
