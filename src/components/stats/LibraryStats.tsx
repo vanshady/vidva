@@ -43,7 +43,19 @@ export const LibraryStats = ({ items, libraryId, isLoading }: LibraryStatsProps)
 
   const totalItems = items.length
   const totalDuration = items.reduce((sum, item) => sum + (item.duration || 0), 0)
-  const totalHours = Math.floor(totalDuration / (1000 * 60))
+  const totalHours = Math.floor(totalDuration / (1000 * 60 * 60))
+
+  const formatDuration = (hours: number) => {
+    const months = Math.floor(hours / (24 * 30))
+    const weeks = Math.floor((hours % (24 * 30)) / (24 * 7))
+    const days = Math.floor((hours % (24 * 7)) / 24)
+    const parts = []
+    if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`)
+    if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? 's' : ''}`)
+    if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`)
+    const readable = parts.length > 0 ? parts.join(' ') : '< 1 day'
+    return `${readable} (${hours.toLocaleString()} hours)`
+  }
 
   return (
     <div>
@@ -55,7 +67,7 @@ export const LibraryStats = ({ items, libraryId, isLoading }: LibraryStatsProps)
         </Group>
         <Group gap="xs">
           <Text span c="dimmed" size="sm">Total Duration:</Text>
-          <Text span size="md" fw={500}>{totalHours.toLocaleString()} hours</Text>
+          <Text span size="md" fw={500}>{formatDuration(totalHours)}</Text>
         </Group>
       </Group>
     </div>
