@@ -46,6 +46,9 @@ export const LibraryStats = ({ items, libraryId, isLoading }: LibraryStatsProps)
   const totalHours = Math.floor(totalDuration / (1000 * 60 * 60))
 
   const formatDuration = (hours: number) => {
+    if (hours < 24) {
+      return `${hours} hour${hours !== 1 ? 's' : ''}`
+    }
     const months = Math.floor(hours / (24 * 30))
     const weeks = Math.floor((hours % (24 * 30)) / (24 * 7))
     const days = Math.floor((hours % (24 * 7)) / 24)
@@ -53,8 +56,7 @@ export const LibraryStats = ({ items, libraryId, isLoading }: LibraryStatsProps)
     if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`)
     if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? 's' : ''}`)
     if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`)
-    const readable = parts.length > 0 ? parts.join(' ') : '< 1 day'
-    return `${readable} (${hours.toLocaleString()} hours)`
+    return `${parts.join(' ')} (${hours.toLocaleString()} hours)`
   }
 
   return (
