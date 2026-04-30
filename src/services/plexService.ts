@@ -115,18 +115,27 @@ export const fetchPlexAPI = async (endpoint: string) => {
   }
 }
 
-export const fetchMetadataBatch = async (items: PlexMediaItem[]) => {
-  const batchSize = 10; // Adjust based on your needs
-  const results = [];
+// Plex's /library/metadata/{key1,key2,...} endpoint accepts a comma-separated
+// list of ratingKeys and returns full metadata (incl. full Role cast list) in
+// one response. We chunk to keep URLs under typical 8KB server limits.
+const BATCH_KEY_COUNT = 200
 
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    const batchPromises = batch.map(item => fetchPlexAPI(`/library/metadata/${item.ratingKey}`));
-    const batchResults = await Promise.all(batchPromises);
-    results.push(...batchResults);
+export const fetchMetadataBatch = async (items: PlexMediaItem[]): Promise<PlexMediaItem[]> => {
+  if (items.length === 0) return []
+
+  const chunks: PlexMediaItem[][] = []
+  for (let i = 0; i < items.length; i += BATCH_KEY_COUNT) {
+    chunks.push(items.slice(i, i + BATCH_KEY_COUNT))
   }
 
-  return results;
+  const responses = await Promise.all(
+    chunks.map(chunk => {
+      const keys = chunk.map(item => item.ratingKey).join(',')
+      return fetchPlexAPI(`/library/metadata/${keys}`)
+    })
+  )
+
+  return responses.flatMap(r => (r.MediaContainer.Metadata as PlexMediaItem[]) || [])
 }
 
 const useBaseStatistics = <T extends BaseStats>(
@@ -329,10 +338,9 @@ export const useLibraryItems = (libraryId: string) => {
     queryKey: ['libraryItems', libraryId],
     queryFn: async () => {
       const data = await fetchPlexAPI(`/library/sections/${libraryId}/all`)
-      const libraryItems = data.MediaContainer.Metadata as PlexMediaItem[]
-      const result = await fetchMetadataBatch(libraryItems || [])
-      return result.map(item => item.MediaContainer.Metadata[0]);
+      const libraryItems = (data.MediaContainer.Metadata as PlexMediaItem[]) || []
+      return fetchMetadataBatch(libraryItems)
     },
     enabled: !!libraryId
   })
-} 
+}
