@@ -25,7 +25,6 @@ dist-ssr
 
 tools
 venv
-README_devin.cursorrules.md
 .cursorrules
 .cursorignore
 requirements.txt
@@ -34,3 +33,4 @@ requirements.txt
 .vscode.example
 .env
 run-docker.sh
+publish-docker.sh
