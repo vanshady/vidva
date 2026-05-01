@@ -18,9 +18,10 @@ interface BaseStatsProps {
   borderColor: string
   libraryId: string
   chartOptions?: ChartOptions<'bar'>
+  countNoun?: string
 }
 
-export const BaseStats = ({ title, type, data, isLoading, error, backgroundColor, borderColor, libraryId }: BaseStatsProps) => {
+export const BaseStats = ({ title, type, data, isLoading, error, backgroundColor, borderColor, libraryId, countNoun }: BaseStatsProps) => {
   const navigate = useNavigate()
 
   if (isLoading) {
@@ -60,7 +61,7 @@ export const BaseStats = ({ title, type, data, isLoading, error, backgroundColor
     labels: data.map(item => item.name),
     datasets: [
       {
-        label: 'Number of Films',
+        label: `Number of ${countNoun ?? 'Films'}`,
         data: data.map(item => item.count),
         backgroundColor,
         borderColor,

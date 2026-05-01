@@ -2,6 +2,8 @@ import { Stack, Group, Select } from '@mantine/core'
 import { LibrarySelector } from '../components/layout/LibrarySelector'
 import {
   useLibraryItems,
+  useLibraryEpisodes,
+  usePlexLibraries,
   useGenreStatistics,
   useCountryStatistics,
   useDecadeStatistics,
@@ -55,13 +57,30 @@ export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) =>
     setSearchParams(params)
   }
 
+  const { data: libraries } = usePlexLibraries()
+  const currentLibrary = libraries?.find(lib => lib.id === parseInt(selectedLibrary))
+  const isTv = currentLibrary?.type === 'show'
+
   const { data: libraryItems, isLoading, error } = useLibraryItems(selectedLibrary)
+  const { data: libraryEpisodes, isLoading: isLoadingEpisodes } = useLibraryEpisodes(selectedLibrary, currentLibrary?.type)
+
+  // For TV: count cast/crew per-episode, sum duration across episodes.
+  // For movies: episodes is undefined and we fall back to libraryItems (movies).
+  const personItems = isTv ? libraryEpisodes : libraryItems
+  const isLoadingPersonItems = isTv ? isLoadingEpisodes : isLoading
 
   const { data: genreStats, isLoading: isLoadingGenreStats } = useGenreStatistics(libraryItems, selectedLibrary)
   const { data: countryStats, isLoading: isLoadingCountryStats } = useCountryStatistics(libraryItems, selectedLibrary)
   const { data: decadeStats, isLoading: isLoadingDecadeStats } = useDecadeStatistics(libraryItems, selectedLibrary)
-  const { data: directorStats, isLoading: isLoadingDirectorStats } = useDirectorStatistics(libraryItems, selectedLibrary)
-  const { data: castStats, isLoading: isLoadingCastStats } = useCastStatistics(libraryItems, selectedLibrary, topCastCount)
+  const { data: directorStats, isLoading: isLoadingDirectorStats } = useDirectorStatistics(personItems, selectedLibrary)
+  const { data: castStats, isLoading: isLoadingCastStats } = useCastStatistics(personItems, selectedLibrary, topCastCount)
+
+  const directorsLoading = isLoadingPersonItems || isLoadingDirectorStats
+  // For TV libraries, hide the directors section once loading completes if the
+  // data is empty — show metadata rarely has directors at the show level, and
+  // even episode-level can be sparse.
+  const showDirectors = !isTv || directorsLoading || (directorStats && directorStats.length > 0)
+  const personCountNoun = isTv ? 'episodes' : 'films'
 
   return (
     <Stack gap="xl">
@@ -88,28 +107,34 @@ export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) =>
       <LibraryStats
         items={libraryItems || []}
         libraryId={selectedLibrary}
-        isLoading={isLoading}
+        isLoading={isLoading || (isTv && isLoadingEpisodes)}
+        durationItems={isTv ? libraryEpisodes : undefined}
+        itemsLabel={isTv ? 'Total Shows' : 'Total Items'}
       />
-      <PersonStats
-        title="Directors"
-        type="director"
-        data={directorStats}
-        isLoading={isLoading || isLoadingDirectorStats}
-        error={error}
-        useDetails={useDirectorDetails}
-        items={libraryItems || []}
-        libraryId={selectedLibrary}
-      />
+      {showDirectors && (
+        <PersonStats
+          title="Directors"
+          type="director"
+          data={directorStats}
+          isLoading={isLoadingPersonItems || isLoadingDirectorStats}
+          error={error}
+          useDetails={useDirectorDetails}
+          items={personItems || []}
+          libraryId={selectedLibrary}
+          countNoun={personCountNoun}
+        />
+      )}
       <PersonStats
         title="Casts"
         type="cast"
         data={castStats}
-        isLoading={isLoading || isLoadingCastStats}
+        isLoading={isLoadingPersonItems || isLoadingCastStats}
         error={error}
         useDetails={useCastMemberDetails}
-        items={libraryItems || []}
+        items={personItems || []}
         libraryId={selectedLibrary}
         topCastCount={topCastCount}
+        countNoun={personCountNoun}
       />
       <BaseStats
         title="Decades"
@@ -120,6 +145,7 @@ export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) =>
         backgroundColor="rgba(245, 158, 11, 0.5)"
         borderColor="rgb(245, 158, 11)"
         libraryId={selectedLibrary}
+        countNoun={isTv ? 'Shows' : 'Films'}
       />
       <BaseStats
         title="Genres"
@@ -130,6 +156,7 @@ export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) =>
         backgroundColor="rgba(59, 130, 246, 0.5)"
         borderColor="rgb(59, 130, 246)"
         libraryId={selectedLibrary}
+        countNoun={isTv ? 'Shows' : 'Films'}
       />
       <BaseStats
         title="Countries"
@@ -140,6 +167,7 @@ export const HomePage = ({ selectedLibrary, onLibraryChange }: HomePageProps) =>
         backgroundColor="rgba(16, 185, 129, 0.5)"
         borderColor="rgb(16, 185, 129)"
         libraryId={selectedLibrary}
+        countNoun={isTv ? 'Shows' : 'Films'}
       />
     </Stack>
   )

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { PlexMediaItem, PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN, useLibraryItems } from '../services/plexService'
+import { PlexMediaItem, PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN, useLibraryItems, useLibraryEpisodes, usePlexLibraries } from '../services/plexService'
 import { Container, Title, Text, SimpleGrid, Paper, Image, Stack, Group, Button, Center, Loader } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
@@ -14,26 +14,69 @@ export const PersonMovies = ({ type, libraryId }: PersonMoviesProps) => {
   const { name } = useParams<{ name: string }>()
   const navigate = useNavigate()
 
-  const { data: allMovies = [], isLoading, error } = useLibraryItems(libraryId)
+  const { data: libraries, isLoading: isLoadingLibraries } = usePlexLibraries()
+  const currentLibrary = libraries?.find(lib => lib.id === parseInt(libraryId))
+  const isTv = currentLibrary?.type === 'show'
+  const itemNoun = isTv ? 'shows' : 'films'
 
-  const movies = allMovies.filter(movie => {
+  const { data: allMovies = [], isLoading: isLoadingMovies, error: moviesError } = useLibraryItems(libraryId)
+  const {
+    data: allEpisodes = [],
+    isLoading: isLoadingEpisodes,
+    isPending: isPendingEpisodes,
+    error: episodesError,
+  } = useLibraryEpisodes(libraryId, currentLibrary?.type)
+
+  // Until we know the library type, treat as still loading — otherwise we'd
+  // momentarily render with isTv=false against movie data that has no Director,
+  // hit the empty state, and "flash" before the episode data arrives.
+  const isLoading = isLoadingLibraries
+    || (isTv ? (isLoadingEpisodes || isPendingEpisodes) : isLoadingMovies)
+  const error = isTv ? episodesError : moviesError
+
+  const matches = (item: PlexMediaItem) => {
     if (type === 'cast') {
       // Always show all films for cast members, regardless of topCastCount setting
       // topCastCount only affects which actors appear in the statistics list
-      return movie.Role?.some(role => role.tag === name)
+      return item.Role?.some(role => role.tag === name)
     } else {
-      return movie.Director?.some(director => director.tag === name)
+      return item.Director?.some(director => director.tag === name)
     }
-  })
+  }
+
+  // For TV: filter matching episodes, then collapse to unique parent shows so
+  // the detail page shows shows (not episodes).
+  const movies: PlexMediaItem[] = isTv
+    ? Array.from(
+      allEpisodes
+        .filter(matches)
+        .reduce((shows, ep) => {
+          const key = ep.grandparentRatingKey
+          if (key && !shows.has(key)) {
+            shows.set(key, {
+              ratingKey: key,
+              title: ep.grandparentTitle ?? ep.title,
+              year: ep.grandparentYear,
+              thumb: ep.grandparentThumb,
+              type: 'show',
+            })
+          }
+          return shows
+        }, new Map<string, PlexMediaItem>())
+        .values()
+    )
+    : allMovies.filter(matches)
 
   if (error) {
     notifications.show({
-      title: 'Movies Loading Error',
-      message: `Failed to load movies for ${name}: ${error.message}`,
+      title: `${isTv ? 'Shows' : 'Movies'} Loading Error`,
+      message: `Failed to load ${itemNoun} for ${name}: ${error.message}`,
       color: 'red',
       autoClose: 5000
     })
   }
+
+  const pageTitle = `${name}'s ${isTv ? 'Shows' : 'Films'}`
 
   if (isLoading) {
     return (
@@ -47,8 +90,8 @@ export const PersonMovies = ({ type, libraryId }: PersonMoviesProps) => {
             Back
           </Button>
           <Stack gap={0}>
-            <Title order={3}>{name}'s Films</Title>
-            <Text size="sm" c="dimmed">{movies?.length || 0} films</Text>
+            <Title order={3}>{pageTitle}</Title>
+            <Text size="sm" c="dimmed">{movies?.length || 0} {itemNoun}</Text>
           </Stack>
         </Group>
         <Center h={200}>
@@ -70,8 +113,8 @@ export const PersonMovies = ({ type, libraryId }: PersonMoviesProps) => {
             Back
           </Button>
           <Stack gap={0}>
-            <Title order={3}>{name}'s Films</Title>
-            <Text size="sm" c="dimmed">{movies?.length || 0} films</Text>
+            <Title order={3}>{pageTitle}</Title>
+            <Text size="sm" c="dimmed">{movies?.length || 0} {itemNoun}</Text>
           </Stack>
         </Group>
         <Center h={200}>
@@ -93,11 +136,11 @@ export const PersonMovies = ({ type, libraryId }: PersonMoviesProps) => {
             Back
           </Button>
           <Stack gap={0}>
-            <Title order={3}>{name}'s Films</Title>
-            <Text size="sm" c="dimmed">{movies?.length || 0} films</Text>
+            <Title order={3}>{pageTitle}</Title>
+            <Text size="sm" c="dimmed">{movies?.length || 0} {itemNoun}</Text>
           </Stack>
         </Group>
-        <Text c="dimmed" ta="center">No films found for {name}</Text>
+        <Text c="dimmed" ta="center">No {itemNoun} found for {name}</Text>
       </Container>
     )
   }
@@ -113,8 +156,8 @@ export const PersonMovies = ({ type, libraryId }: PersonMoviesProps) => {
           Back
         </Button>
         <Stack gap={0}>
-          <Title order={3}>{name}'s Films</Title>
-          <Text size="sm" c="dimmed">{(movies as PlexMediaItem[])?.length || 0} films</Text>
+          <Title order={3}>{pageTitle}</Title>
+          <Text size="sm" c="dimmed">{(movies as PlexMediaItem[])?.length || 0} {itemNoun}</Text>
         </Stack>
       </Group>
 

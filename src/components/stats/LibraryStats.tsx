@@ -6,9 +6,14 @@ import { StatsTitle } from '../common/StatsTitle'
 interface LibraryStatsProps extends PlexMediaItemsProps {
   libraryId: string
   isLoading: boolean
+  // For TV libraries, pass episodes so total duration can be summed across all
+  // episodes (each item.duration is per-episode). When omitted, duration is
+  // summed from `items` directly (movie libraries).
+  durationItems?: PlexMediaItemsProps['items']
+  itemsLabel?: string
 }
 
-export const LibraryStats = ({ items, libraryId, isLoading }: LibraryStatsProps) => {
+export const LibraryStats = ({ items, libraryId, isLoading, durationItems, itemsLabel }: LibraryStatsProps) => {
   const { data: libraries, isLoading: isPlexLibrariesLoading } = usePlexLibraries()
   const currentLibrary = libraries?.find(lib => lib.id === parseInt(libraryId))
 
@@ -42,7 +47,8 @@ export const LibraryStats = ({ items, libraryId, isLoading }: LibraryStatsProps)
   }
 
   const totalItems = items.length
-  const totalDuration = items.reduce((sum, item) => sum + (item.duration || 0), 0)
+  const durationSource = durationItems ?? items
+  const totalDuration = durationSource.reduce((sum, item) => sum + (item.duration || 0), 0)
   const totalHours = Math.floor(totalDuration / (1000 * 60 * 60))
 
   const formatDuration = (hours: number) => {
@@ -64,7 +70,7 @@ export const LibraryStats = ({ items, libraryId, isLoading }: LibraryStatsProps)
       <StatsTitle title={`${currentLibrary?.name} Overview`} />
       <Group gap="xs" justify='space-between' maw="800px">
         <Group gap="xs">
-          <Text span c="dimmed" size="sm">Total Items:</Text>
+          <Text span c="dimmed" size="sm">{itemsLabel ?? 'Total Items'}:</Text>
           <Text span size="md" fw={500}>{totalItems.toLocaleString()}</Text>
         </Group>
         <Group gap="xs">

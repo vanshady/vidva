@@ -19,6 +19,11 @@ export interface PlexMediaItem {
   rating?: number
   Role?: { tag: string }[]
   Country?: { tag: string }[]
+  // Set on episode items — refers to the parent show.
+  grandparentRatingKey?: string
+  grandparentTitle?: string
+  grandparentThumb?: string
+  grandparentYear?: number
   Media?: {
     Language?: {
       tag: string
@@ -342,5 +347,20 @@ export const useLibraryItems = (libraryId: string) => {
       return fetchMetadataBatch(libraryItems)
     },
     enabled: !!libraryId
+  })
+}
+
+// Fetch all episodes (type=4) for a TV show library. Each episode has its own
+// duration, Director, and Role list — needed so cast/crew can be counted per
+// episode rather than per show.
+export const useLibraryEpisodes = (libraryId: string, libraryType: string | undefined) => {
+  return useQuery<PlexMediaItem[]>({
+    queryKey: ['libraryEpisodes', libraryId],
+    queryFn: async () => {
+      const data = await fetchPlexAPI(`/library/sections/${libraryId}/all?type=4`)
+      const episodes = (data.MediaContainer.Metadata as PlexMediaItem[]) || []
+      return fetchMetadataBatch(episodes)
+    },
+    enabled: !!libraryId && libraryType === 'show'
   })
 }

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN, useLibraryItems } from '../services/plexService'
+import { PLEX_SERVER_ID, PLEX_SERVER_URL, PLEX_TOKEN, useLibraryItems, usePlexLibraries } from '../services/plexService'
 import { Container, SimpleGrid, Paper, Image, Stack, Group, Button, Center, Loader, Text, Title } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
@@ -13,6 +13,10 @@ interface CategoryMoviesProps {
 export const CategoryMovies = ({ type, title, libraryId }: CategoryMoviesProps) => {
   const { name } = useParams<{ name: string }>()
   const navigate = useNavigate()
+
+  const { data: libraries } = usePlexLibraries()
+  const isTv = libraries?.find(lib => lib.id === parseInt(libraryId))?.type === 'show'
+  const itemNoun = isTv ? 'shows' : 'films'
 
   const { data: allMovies = [], isLoading, error } = useLibraryItems(libraryId)
 
@@ -33,8 +37,8 @@ export const CategoryMovies = ({ type, title, libraryId }: CategoryMoviesProps) 
 
   if (error) {
     notifications.show({
-      title: 'Movies Loading Error',
-      message: `Failed to load ${type} movies: ${error.message}`,
+      title: `${isTv ? 'Shows' : 'Movies'} Loading Error`,
+      message: `Failed to load ${type} ${itemNoun}: ${error.message}`,
       color: 'red',
       autoClose: 5000
     })
@@ -53,7 +57,7 @@ export const CategoryMovies = ({ type, title, libraryId }: CategoryMoviesProps) 
           </Button>
           <Stack gap={0}>
             <Title order={3}>{title}: {name}</Title>
-            <Text size="sm" c="dimmed">{movies?.length || 0} films</Text>
+            <Text size="sm" c="dimmed">{movies?.length || 0} {itemNoun}</Text>
           </Stack>
         </Group>
         <Center h={200}>
@@ -76,7 +80,7 @@ export const CategoryMovies = ({ type, title, libraryId }: CategoryMoviesProps) 
           </Button>
           <Stack gap={0}>
             <Title order={3}>{title}: {name}</Title>
-            <Text size="sm" c="dimmed">{movies?.length || 0} films</Text>
+            <Text size="sm" c="dimmed">{movies?.length || 0} {itemNoun}</Text>
           </Stack>
         </Group>
         <Center h={200}>
@@ -99,10 +103,10 @@ export const CategoryMovies = ({ type, title, libraryId }: CategoryMoviesProps) 
           </Button>
           <Stack gap={0}>
             <Title order={3}>{title}: {name}</Title>
-            <Text size="sm" c="dimmed">{movies?.length || 0} films</Text>
+            <Text size="sm" c="dimmed">{movies?.length || 0} {itemNoun}</Text>
           </Stack>
         </Group>
-        <Text c="dimmed" ta="center">No films found in this {type}</Text>
+        <Text c="dimmed" ta="center">No {itemNoun} found in this {type}</Text>
       </Container>
     )
   }
@@ -119,7 +123,7 @@ export const CategoryMovies = ({ type, title, libraryId }: CategoryMoviesProps) 
         </Button>
         <Stack gap={0}>
           <Title order={3}>{title}: {name}</Title>
-          <Text size="sm" c="dimmed">{movies?.length || 0} films</Text>
+          <Text size="sm" c="dimmed">{movies?.length || 0} {itemNoun}</Text>
         </Stack>
       </Group>
 

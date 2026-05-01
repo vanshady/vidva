@@ -21,9 +21,10 @@ interface PersonStatsProps extends PlexMediaItemsProps {
   }
   libraryId: string
   topCastCount?: string
+  countNoun?: string
 }
 
-export const PersonStats = ({ title, type, data, isLoading, error, useDetails, libraryId, topCastCount }: PersonStatsProps) => {
+export const PersonStats = ({ title, type, data, isLoading, error, useDetails, libraryId, topCastCount, countNoun }: PersonStatsProps) => {
   // If > md use 10 or else use 8
   const isAtLeastMd = useMediaQuery('(min-width: 62em)')
   const [searchParams, setSearchParams] = useSearchParams()
@@ -91,6 +92,7 @@ export const PersonStats = ({ title, type, data, isLoading, error, useDetails, l
             type={type}
             libraryId={libraryId}
             topCastCount={type === 'cast' ? topCastCount : undefined}
+            countNoun={countNoun}
           />
         ))}
       </SimpleGrid>
@@ -116,9 +118,10 @@ interface PersonItemProps {
   }
   libraryId: string
   topCastCount?: string
+  countNoun?: string
 }
 
-const PersonItem = ({ name, count, movieId, useDetails, type, libraryId }: PersonItemProps) => {
+const PersonItem = ({ name, count, movieId, useDetails, type, libraryId, countNoun }: PersonItemProps) => {
   const navigate = useNavigate()
   const { data: details } = useDetails(name, movieId || '')
 
@@ -141,7 +144,7 @@ const PersonItem = ({ name, count, movieId, useDetails, type, libraryId }: Perso
           alt={name}
         />
         <Text fw={500}>{name}</Text>
-        <Text size="sm" c="dimmed">{count} films</Text>
+        <Text size="sm" c="dimmed">{count} {countNoun ?? 'films'}</Text>
       </Stack>
     </div>
   )
