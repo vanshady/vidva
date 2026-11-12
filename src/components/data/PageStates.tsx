@@ -8,20 +8,23 @@ import classes from './data.module.css'
 /** One alert per failure, with the recovery the user can actually take. */
 export const PlexErrorAlert = ({ error }: { error: Error }) => {
   const network = error instanceof PlexError && error.kind === 'network'
+  const unauthorized = error instanceof PlexError && error.status === 401
   return (
     <Alert
       color="red"
       variant="light"
       icon={<IconAlertTriangle size={18} />}
-      title={network ? 'Plex server unreachable' : 'Plex returned an error'}
+      title={network ? 'Plex server unreachable' : unauthorized ? 'Plex rejected the token' : 'Plex returned an error'}
       mb="lg"
     >
       <Stack gap="xs">
         <Text size="sm">{error.message}</Text>
         <Text size="sm" c="dimmed">
           {network
-            ? 'Check that the server is running and that this container has the right Plex server URL and token.'
-            : 'The library may have been removed, or the token may lack access to it.'}
+            ? 'Check that the server is running and that this container has the right Plex server URL.'
+            : unauthorized
+              ? 'Check the PLEX_TOKEN this container was started with.'
+              : 'The library may have been removed, or the token may lack access to it.'}
         </Text>
         <Group gap="xs">
           <Button size="xs" variant="default" onClick={() => window.location.reload()}>Try again</Button>

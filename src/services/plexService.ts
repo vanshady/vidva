@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 
-export const PLEX_SERVER_URL = import.meta.env.VITE_PLEX_SERVER_URL
-export const PLEX_TOKEN = import.meta.env.VITE_PLEX_TOKEN
+// The browser never talks to Plex directly. Caddy (in the container) and Vite's
+// dev/preview server proxy /plex/* to the Plex server and add the token there,
+// so the token stays out of the bundle and HTTPS deployments avoid mixed content.
+export const PLEX_PROXY_PATH = '/plex'
 export const PLEX_SERVER_ID = import.meta.env.VITE_PLEX_SERVER_ID
 
 export interface PlexMediaItem {
@@ -98,16 +100,17 @@ export class PlexError extends Error {
 export const fetchPlexAPI = async (endpoint: string) => {
   let response: Response
   try {
-    response = await fetch(`${PLEX_SERVER_URL}${endpoint}`, {
-      headers: {
-        'X-Plex-Token': PLEX_TOKEN,
-        'Accept': 'application/json'
-      }
+    response = await fetch(`${PLEX_PROXY_PATH}${endpoint}`, {
+      headers: { 'Accept': 'application/json' },
     })
   } catch {
-    throw new PlexError(`Can't reach the Plex server at ${PLEX_SERVER_URL}.`, 'network')
+    throw new PlexError(`Can't reach VIDVA's Plex proxy.`, 'network')
   }
 
+  // The proxy answers 502/504 when the Plex server itself is down or unreachable.
+  if (response.status === 502 || response.status === 504) {
+    throw new PlexError(`Can't reach the Plex server (proxy answered ${response.status}).`, 'network', response.status)
+  }
   if (!response.ok) {
     throw new PlexError(`Plex answered ${response.status} ${response.statusText} for ${endpoint.split('?')[0]}.`, 'http', response.status)
   }

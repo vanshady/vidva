@@ -11,9 +11,9 @@ A Dashboard for displaying interactive statistics about your Plex media library.
 
 ## Docker
 
-| Registry   | Architecture | Version | Image Path              |
-| ---------- | ------------ | ------- | ----------------------- |
-| Docker Hub | AMD64        | Latest  | `vanshady/vidva:latest` |
+| Registry   | Architecture  | Version | Image Path              |
+| ---------- | ------------- | ------- | ----------------------- |
+| Docker Hub | AMD64, ARM64  | Latest  | `vanshady/vidva:latest` |
 
 ## Docker Instructions
 
@@ -26,12 +26,24 @@ Pass in env:
 - VIDVA_DEFAULT_TOP_CAST_COUNT=4 # all or 3 (plex default) or 4 (letterboxd default) or 5 or 10
 ```
 
+`PLEX_URL` is accepted as an alias for `PLEX_SERVER_URL`.
+
 Bind port 5173 and voila!
+
+### How VIDVA talks to Plex
+
+The browser never contacts Plex directly. The container proxies `/plex/*` to `PLEX_SERVER_URL` and adds the token on the server side, so:
+
+- The Plex token is never sent to the browser.
+- VIDVA works behind an HTTPS reverse proxy even when Plex itself is plain HTTP, and Plex needs no CORS setup. The container must be able to reach `PLEX_SERVER_URL`.
+- The proxy only forwards read-only requests for library data and artwork (`GET /library/*`, `/photo/:/transcode`). Server settings, account data and anything that writes are blocked.
+
+Anyone who can open VIDVA can browse your library through it. If you expose it beyond your LAN, put authentication in front of it (Authelia, Cloudflare Access, your reverse proxy's basic auth, etc.).
 
 ## Prerequisites
 
-- Node.js (v18 or higher)
-- npm or yarn
+- Node.js 20.19+ or 22.12+ (required by Vite 8)
+- npm
 - A running Plex Media Server
 - Plex API token
 
@@ -40,7 +52,7 @@ Bind port 5173 and voila!
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/vidva.git
+git clone https://github.com/vanshady/vidva.git
 cd vidva
 ```
 
@@ -52,12 +64,13 @@ npm install
 
 3. Configure your Plex server:
 
-Create a `.env` file in the root directory with:
+Copy `.env.example` to `.env` and fill it in. The dev server proxies `/plex/*` exactly like the container does, so the URL and token stay unprefixed (Vite only exposes `VITE_` names to browser code):
 
 ```bash
 PLEX_SERVER_URL=your_plex_server_url
 PLEX_TOKEN=your_plex_token
-PLEX_SERVER_ID=your_plex_server_id
+VITE_PLEX_SERVER_ID=your_plex_server_id
+VITE_DEFAULT_TOP_CAST_COUNT=4
 ```
 
 4. Start the development server:
@@ -73,24 +86,22 @@ npm run dev
 ```text
 src/
 ├── components/
-│   ├── layout/
-│   ├── stats/
-│   └── common/
-├── pages/
-├── services/
-├── types/
-├── utils/
+│   ├── data/      # HTML/CSS charts, ranked rows, poster grid, loading and error states
+│   └── layout/    # app shell, sidebar, search, library picker
+├── lib/           # library aggregation, formatting, URL state
+├── pages/         # overview, index and detail pages
+├── services/      # Plex API client
 └── assets/
 ```
 
 ## Technologies Used
 
-- React 18
+- React 19
 - Vite
 - TypeScript
 - Mantine UI
-- Chart.js
-- React Query
+- TanStack Query
+- React Router
 - Plex API
 
 ## License

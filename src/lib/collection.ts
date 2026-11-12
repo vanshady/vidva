@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
 import {
   PlexMediaItem,
-  PLEX_SERVER_URL,
-  PLEX_TOKEN,
+  PLEX_PROXY_PATH,
   useCastStatistics,
   useCountryStatistics,
   useDecadeStatistics,
@@ -19,7 +18,7 @@ export interface RankedEntry {
   count: number
 }
 
-/** Absolute people thumbs (metadata-static.plex.tv) load as-is; relative ones go through the server. */
+/** Absolute people thumbs (metadata-static.plex.tv) load as-is; relative ones go through the Plex proxy. */
 export const plexImageUrl = (thumb: string | undefined, width?: number, height?: number) => {
   if (!thumb) return undefined
   if (/^https?:\/\//.test(thumb)) return thumb
@@ -30,11 +29,10 @@ export const plexImageUrl = (thumb: string | undefined, width?: number, height?:
       minSize: '1',
       upscale: '1',
       url: thumb,
-      'X-Plex-Token': PLEX_TOKEN,
     })
-    return `${PLEX_SERVER_URL}/photo/:/transcode?${params.toString()}`
+    return `${PLEX_PROXY_PATH}/photo/:/transcode?${params.toString()}`
   }
-  return `${PLEX_SERVER_URL}${thumb}?X-Plex-Token=${PLEX_TOKEN}`
+  return `${PLEX_PROXY_PATH}${thumb}`
 }
 
 /**

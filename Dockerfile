@@ -1,5 +1,6 @@
-# Build stage
-FROM node:22-alpine AS builder
+# Build stage. Runs on the build host's native platform: the output is static
+# files, so multi-arch images don't need to run npm/vite under emulation.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -31,6 +32,9 @@ RUN chmod +x /env.sh
 
 # Expose port 5173
 EXPOSE 5173
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -q --spider http://127.0.0.1:5173/ || exit 1
 
 ENTRYPOINT ["/env.sh"]
 
