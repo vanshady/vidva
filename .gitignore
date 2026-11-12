@@ -34,3 +34,9 @@ requirements.txt
 .env
 run-docker.sh
 publish-docker.sh
+
+# Local agent and design-tool state (impeccable live config stays tracked)
+.claude/
+.impeccable/*
+!.impeccable/live/
+.playwright-mcp/
