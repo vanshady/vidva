@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { CachedCredits, readCredits, slimCredits, writeCredits } from './creditsCache'
 
 // The browser never talks to Plex directly. Caddy (in the container) and Vite's
 // dev/preview server proxy /plex/* to the Plex server and add the token there,
@@ -16,6 +17,8 @@ export interface PlexMediaItem {
   Genre?: { tag: string }[]
   Director?: { tag: string; thumb?: string }[]
   lastViewedAt?: string
+  // Unix seconds; changes whenever Plex rewrites the item's metadata.
+  updatedAt?: number
   duration?: number
   rating?: number
   Role?: { tag: string; thumb?: string }[]
@@ -118,6 +121,22 @@ export const fetchPlexAPI = async (endpoint: string) => {
   return response.json()
 }
 
+// Plex returns far more than the dashboard reads (file/stream info, ratings,
+// producers, summaries, artwork palettes). Excluding it server-side roughly
+// halves the payload the browser downloads and parses.
+const UNUSED_ELEMENTS = 'Media,Guid,Field,Label,Producer,Image,UltraBlurColors,Rating,Writer,CommonSenseMedia'
+const UNUSED_FIELDS = 'summary,tagline'
+const METADATA_PARAMS = `excludeElements=${UNUSED_ELEMENTS}&excludeFields=${UNUSED_FIELDS}`
+// The listing's tag lists are truncated (Genre, Country, Director, Role all
+// differ from full metadata), so credits always come from the metadata
+// endpoint or the cache and the listing can skip them too.
+const LISTING_PARAMS = `excludeElements=${UNUSED_ELEMENTS},Genre,Country,Director,Role&excludeFields=${UNUSED_FIELDS}`
+
+const fetchListing = async (path: string): Promise<PlexMediaItem[]> => {
+  const data = await fetchPlexAPI(`${path}${path.includes('?') ? '&' : '?'}${LISTING_PARAMS}`)
+  return (data.MediaContainer.Metadata as PlexMediaItem[]) || []
+}
+
 // Plex's /library/metadata/{key1,key2,...} endpoint accepts a comma-separated
 // list of ratingKeys and returns full metadata (incl. full Role cast list) in
 // one response. We chunk to keep URLs under typical 8KB server limits.
@@ -134,12 +153,50 @@ export const fetchMetadataBatch = async (items: PlexMediaItem[]): Promise<PlexMe
   const responses = await Promise.all(
     chunks.map(chunk => {
       const keys = chunk.map(item => item.ratingKey).join(',')
-      return fetchPlexAPI(`/library/metadata/${keys}`)
+      return fetchPlexAPI(`/library/metadata/${keys}?${METADATA_PARAMS}`)
     })
   )
 
   return responses.flatMap(r => (r.MediaContainer.Metadata as PlexMediaItem[]) || [])
 }
+
+/**
+ * Attaches full credits to listing items. Credits for items whose `updatedAt`
+ * is unchanged since the last visit come from the browser cache; only new or
+ * changed items hit Plex's metadata endpoint, so repeat loads skip the
+ * expensive part entirely.
+ */
+const withCredits = async (cacheKey: string, listing: PlexMediaItem[]): Promise<PlexMediaItem[]> => {
+  const cached = await readCredits(cacheKey)
+
+  const snapshot: Record<string, CachedCredits> = {}
+  const stale: PlexMediaItem[] = []
+  listing.forEach(item => {
+    const hit = cached[item.ratingKey]
+    // Without an updatedAt there's nothing to validate against; always refetch.
+    if (hit && item.updatedAt !== undefined && hit.updatedAt === item.updatedAt) snapshot[item.ratingKey] = hit
+    else stale.push(item)
+  })
+  if (stale.length > 0) {
+    const fresh = await fetchMetadataBatch(stale)
+    fresh.forEach(item => { snapshot[item.ratingKey] = slimCredits(item) })
+  }
+  // Rewritten even when nothing was stale so removed titles drop out.
+  if (stale.length > 0 || Object.keys(cached).length !== listing.length) {
+    void writeCredits(cacheKey, snapshot)
+  }
+
+  return listing.map(item => {
+    const credits = snapshot[item.ratingKey]
+    if (!credits) return item
+    const { Genre, Country, Director, Role } = credits
+    return { ...item, Genre, Country, Director, Role }
+  })
+}
+
+// Namespaced by server so pointing VIDVA at a different Plex can't reuse
+// another server's ratingKeys.
+const cacheKeyFor = (path: string) => `${PLEX_SERVER_ID ?? ''}${path}`
 
 const useBaseStatistics = <T extends BaseStats>(
   items: PlexMediaItem[] | undefined,
@@ -298,9 +355,8 @@ export const useLibraryItems = (libraryId: string) => {
   return useQuery<PlexMediaItem[]>({
     queryKey: ['libraryItems', libraryId],
     queryFn: async () => {
-      const data = await fetchPlexAPI(`/library/sections/${libraryId}/all`)
-      const libraryItems = (data.MediaContainer.Metadata as PlexMediaItem[]) || []
-      return fetchMetadataBatch(libraryItems)
+      const path = `/library/sections/${libraryId}/all`
+      return withCredits(cacheKeyFor(path), await fetchListing(path))
     },
     enabled: !!libraryId
   })
@@ -313,9 +369,8 @@ export const useLibraryEpisodes = (libraryId: string, libraryType: string | unde
   return useQuery<PlexMediaItem[]>({
     queryKey: ['libraryEpisodes', libraryId],
     queryFn: async () => {
-      const data = await fetchPlexAPI(`/library/sections/${libraryId}/all?type=4`)
-      const episodes = (data.MediaContainer.Metadata as PlexMediaItem[]) || []
-      return fetchMetadataBatch(episodes)
+      const path = `/library/sections/${libraryId}/all?type=4`
+      return withCredits(cacheKeyFor(path), await fetchListing(path))
     },
     enabled: !!libraryId && libraryType === 'show'
   })
