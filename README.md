@@ -36,7 +36,7 @@ The browser never contacts Plex directly. The container proxies `/plex/*` to `PL
 
 - The Plex token is never sent to the browser.
 - VIDVA works behind an HTTPS reverse proxy even when Plex itself is plain HTTP, and Plex needs no CORS setup. The container must be able to reach `PLEX_SERVER_URL`.
-- The proxy only forwards read-only requests for library data and artwork (`GET /library/*`, `/photo/:/transcode`). Server settings, account data and anything that writes are blocked.
+- The proxy only forwards the exact read-only requests the dashboard makes (library lists, item metadata, artwork). Server settings, account data, scans/refreshes and anything that writes get 403, and artwork requests can only point at library thumbnails.
 
 Anyone who can open VIDVA can browse your library through it. If you expose it beyond your LAN, put authentication in front of it (Authelia, Cloudflare Access, your reverse proxy's basic auth, etc.).
 

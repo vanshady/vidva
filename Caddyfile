@@ -3,6 +3,14 @@
 	auto_https off
 }
 
+# PLEX_SERVER_URL and PLEX_TOKEN come from the container env (see env.sh).
+(plex_upstream) {
+	reverse_proxy {$PLEX_SERVER_URL} {
+		header_up Host {upstream_hostport}
+		header_up X-Plex-Token {$PLEX_TOKEN}
+	}
+}
+
 :5173 {
 	root * /app/dist
 	encode zstd gzip
@@ -28,21 +36,32 @@
 	}
 
 	# Plex API and images. The browser calls /plex/...; the token is added here,
-	# server-side, so it never reaches the bundle. Only the read-only endpoints
-	# the dashboard uses are forwarded: server settings (/:/prefs), account data
-	# and anything that writes stay unreachable through this proxy.
+	# server-side, so it never reaches the bundle. Only the exact read-only
+	# request shapes the dashboard makes are forwarded; everything else
+	# (server settings, account data, scans/refreshes, writes) gets 403.
 	handle /plex/* {
-		@allowed {
+		@library {
 			method GET HEAD
-			path /plex/library/* /plex/photo/:/transcode
+			path_regexp ^/plex/library/(sections|sections/[0-9]+/all|metadata/[0-9]+(,[0-9]+)*|metadata/[0-9]+/thumb/[0-9]+)$
 		}
-		handle @allowed {
+		handle @library {
 			uri strip_prefix /plex
-			reverse_proxy {$PLEX_SERVER_URL} {
-				header_up Host {upstream_hostport}
-				header_up X-Plex-Token {$PLEX_TOKEN}
-			}
+			import plex_upstream
 		}
+
+		# Resized artwork. Plex's transcoder fetches whatever `url` names (remote
+		# URLs included), so the request is rebuilt from validated parts and `url`
+		# can only be a library thumbnail.
+		@artwork {
+			method GET HEAD
+			path /plex/photo/:/transcode
+			expression `{query.url}.matches('^/library/metadata/[0-9]+/thumb/[0-9]+$') && {query.width}.matches('^[0-9]{1,4}$') && {query.height}.matches('^[0-9]{1,4}$')`
+		}
+		handle @artwork {
+			rewrite * /photo/:/transcode?width={query.width}&height={query.height}&minSize=1&upscale=1&url={query.url}
+			import plex_upstream
+		}
+
 		handle {
 			respond 403
 		}
