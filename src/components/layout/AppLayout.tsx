@@ -7,7 +7,7 @@ import {
   IconUsers,
   IconWorld,
 } from '@tabler/icons-react'
-import { ReactNode, useEffect, useRef } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useLinkBuilder } from '../../lib/library'
 import { useCollection } from '../../lib/collection'
@@ -38,10 +38,33 @@ export const AppLayout = ({ children }: { children: ReactNode }) => {
   const link = useLinkBuilder()
   const { library, items, isTv } = useCollection()
   const tabsRef = useRef<HTMLElement>(null)
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const [edges, setEdges] = useState({ start: true, end: false })
+
+  const updateEdges = () => {
+    const el = viewportRef.current
+    if (!el) return
+    setEdges({ start: el.scrollLeft <= 1, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 1 })
+  }
 
   // A deep link to /countries should show its own tab, not leave it off-screen.
+  // Center it, clamped to the strip, so the last tab lands flush at the end.
+  // Re-run when the strip resizes too (a page scrollbar appearing narrows it).
   useEffect(() => {
-    tabsRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+    const vp = viewportRef.current
+    if (!vp) return
+    const centerActive = () => {
+      const tab = tabsRef.current?.querySelector<HTMLElement>('[aria-current="page"]')
+      if (tab) {
+        const target = tab.offsetLeft - (vp.clientWidth - tab.offsetWidth) / 2
+        vp.scrollLeft = Math.max(0, Math.min(target, vp.scrollWidth - vp.clientWidth))
+      }
+      updateEdges()
+    }
+    centerActive()
+    const observer = new ResizeObserver(centerActive)
+    observer.observe(vp)
+    return () => observer.disconnect()
   }, [pathname])
 
   return (
@@ -52,7 +75,14 @@ export const AppLayout = ({ children }: { children: ReactNode }) => {
     >
       <AppShell.Header hiddenFrom="sm" className={classes.mobileHeader}>
         <Group px="md" h={52}><Logo /></Group>
-        <ScrollArea type="never" className={classes.tabScroll}>
+        <ScrollArea
+          type="never"
+          className={classes.tabScroll}
+          viewportRef={viewportRef}
+          onScrollPositionChange={updateEdges}
+          data-start={edges.start}
+          data-end={edges.end}
+        >
           <nav aria-label="Sections" className={classes.tabs} ref={tabsRef}>
             {NAV.map(item => (
               <Link

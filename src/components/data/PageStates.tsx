@@ -20,7 +20,7 @@ export const PlexErrorAlert = ({ error }: { error: Error }) => {
         <Text size="sm">{error.message}</Text>
         <Text size="sm" c="dimmed">
           {network
-            ? 'Check that the server is running and that PLEX_SERVER_URL and PLEX_TOKEN are set for this container.'
+            ? 'Check that the server is running and that this container has the right Plex server URL and token.'
             : 'The library may have been removed, or the token may lack access to it.'}
         </Text>
         <Group gap="xs">

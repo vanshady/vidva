@@ -10,6 +10,8 @@ import { CardSkeleton, EmptyNote, LibraryNotFound, PlexErrorAlert, RowsSkeleton 
 import classes from '../components/data/data.module.css'
 
 const TOP = 10
+// Genres sit beside the taller Top cast card; extra rows fill that height with data.
+const TOP_GENRES = 15
 
 export const OverviewPage = () => {
   const c = useCollection()
@@ -25,8 +27,8 @@ export const OverviewPage = () => {
   const titleUnit = c.isTv ? 'show' : 'film'
   const personUnit = c.isTv ? 'episode' : 'film'
 
-  const rows = (dimension: Dimension, data: { name: string; count: number }[] | undefined, withPhotos = false): RankedRow[] =>
-    (data ?? []).slice(0, TOP).map((d, i) => ({
+  const rows = (dimension: Dimension, data: { name: string; count: number }[] | undefined, withPhotos = false, limit = TOP): RankedRow[] =>
+    (data ?? []).slice(0, limit).map((d, i) => ({
       ...d,
       rank: i + 1,
       href: link(detailPath(dimension, d.name)),
@@ -136,10 +138,10 @@ export const OverviewPage = () => {
 
         <SectionCard
           title="Genres"
-          action={genre && genre.length > TOP ? { label: `All ${formatNumber(genre.length)}`, to: link('/genres') } : undefined}
+          action={genre && genre.length > TOP_GENRES ? { label: `All ${formatNumber(genre.length)}`, to: link('/genres') } : undefined}
         >
           {genre && genre.length > 0
-            ? <RankedRows rows={rows('genre', genre)} max={maxOf(genre)} unit={titleUnit} />
+            ? <RankedRows rows={rows('genre', genre, false, TOP_GENRES)} max={maxOf(genre)} unit={titleUnit} />
             : <EmptyNote>No genre tags in this library's metadata.</EmptyNote>}
         </SectionCard>
 

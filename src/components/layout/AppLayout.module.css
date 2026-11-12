@@ -52,8 +52,19 @@
   border-bottom: 1px solid var(--mantine-color-dark-4);
 }
 
+/* Fade only the edge that has more tabs beyond it. */
 .tabScroll {
-  mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  --fade-l: 0px;
+  --fade-r: 40px;
+  mask-image: linear-gradient(to right, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+}
+
+.tabScroll[data-start='false'] {
+  --fade-l: 40px;
+}
+
+.tabScroll[data-end='true'] {
+  --fade-r: 0px;
 }
 
 .tabs {
@@ -64,6 +75,7 @@
 }
 
 .tab {
+  scroll-margin-inline: 48px;
   padding: 8px 12px;
   border-radius: var(--mantine-radius-md);
   color: var(--mantine-color-dark-2);
