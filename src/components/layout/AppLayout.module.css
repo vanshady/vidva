@@ -1,0 +1,86 @@
+.navbar {
+  background: var(--mantine-color-dark-8);
+  border-right: 1px solid var(--mantine-color-dark-4);
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  color: var(--mantine-color-dark-0);
+  border-radius: var(--mantine-radius-sm);
+}
+
+.navLink {
+  border-radius: var(--mantine-radius-md);
+  margin-bottom: 2px;
+  color: var(--mantine-color-dark-2);
+  font-weight: 500;
+}
+
+.navLink[data-active] {
+  color: var(--mantine-color-dark-0);
+  background: var(--mantine-color-dark-6);
+}
+
+.navLink[data-active] svg {
+  color: var(--mantine-color-vidva-5);
+}
+
+.navFooter {
+  margin-top: auto;
+  padding: 12px 10px 4px;
+  border-top: 1px solid var(--mantine-color-dark-4);
+}
+
+.main {
+  background: var(--mantine-color-dark-7);
+  min-height: 100dvh;
+}
+
+.content {
+  padding: 28px 32px 64px;
+}
+
+.mobileHeader {
+  background: var(--mantine-color-dark-8);
+  border-bottom: 1px solid var(--mantine-color-dark-4);
+}
+
+.tabScroll {
+  mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 12px 10px;
+  width: max-content;
+}
+
+.tab {
+  padding: 8px 12px;
+  border-radius: var(--mantine-radius-md);
+  color: var(--mantine-color-dark-2);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tab[data-active] {
+  color: var(--mantine-color-dark-0);
+  background: var(--mantine-color-dark-6);
+  box-shadow: inset 0 -2px 0 var(--mantine-color-vidva-5);
+}
+
+@media (max-width: 48em) {
+  .content {
+    padding: 20px 16px 48px;
+  }
+}

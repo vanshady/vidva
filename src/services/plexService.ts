@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { notifications } from '@mantine/notifications'
 
 export const PLEX_SERVER_URL = import.meta.env.VITE_PLEX_SERVER_URL
 export const PLEX_TOKEN = import.meta.env.VITE_PLEX_TOKEN
@@ -17,7 +16,7 @@ export interface PlexMediaItem {
   lastViewedAt?: string
   duration?: number
   rating?: number
-  Role?: { tag: string }[]
+  Role?: { tag: string; thumb?: string }[]
   Country?: { tag: string }[]
   // Set on episode items — refers to the parent show.
   grandparentRatingKey?: string
@@ -87,37 +86,33 @@ interface PlexSection {
   count: number
 }
 
+export class PlexError extends Error {
+  constructor(message: string, readonly kind: 'network' | 'http', readonly status?: number) {
+    super(message)
+    this.name = 'PlexError'
+  }
+}
+
+// Errors are thrown, never toasted here: pages render one alert per failure
+// instead of a notification per request.
 export const fetchPlexAPI = async (endpoint: string) => {
+  let response: Response
   try {
-    const response = await fetch(`${PLEX_SERVER_URL}${endpoint}`, {
+    response = await fetch(`${PLEX_SERVER_URL}${endpoint}`, {
       headers: {
         'X-Plex-Token': PLEX_TOKEN,
         'Accept': 'application/json'
       }
     })
-
-    if (!response.ok) {
-      const errorMessage = `Plex API error: ${response.statusText} (${response.status})`
-      notifications.show({
-        title: 'Plex API Error',
-        message: errorMessage,
-        color: 'red',
-        autoClose: 5000
-      })
-      throw new Error(errorMessage)
-    }
-
-    return response.json()
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-    notifications.show({
-      title: 'Network Error',
-      message: `Failed to connect to Plex server: ${errorMessage}`,
-      color: 'red',
-      autoClose: 5000
-    })
-    throw error
+  } catch {
+    throw new PlexError(`Can't reach the Plex server at ${PLEX_SERVER_URL}.`, 'network')
   }
+
+  if (!response.ok) {
+    throw new PlexError(`Plex answered ${response.status} ${response.statusText} for ${endpoint.split('?')[0]}.`, 'http', response.status)
+  }
+
+  return response.json()
 }
 
 // Plex's /library/metadata/{key1,key2,...} endpoint accepts a comma-separated
@@ -216,27 +211,6 @@ export const useDirectorStatistics = (items: PlexMediaItem[] | undefined, librar
   )
 }
 
-// Add a new hook for fetching director details
-export const useDirectorDetails = (directorName: string, movieId: string) => {
-  return useQuery({
-    queryKey: ['directorDetails', directorName, movieId],
-    queryFn: async () => {
-      const data = await fetchPlexAPI(`/library/metadata/${movieId}`)
-      const directors = data.MediaContainer.Metadata[0].Director || []
-      const director = directors.find((d: PlexDirector) => d.tag === directorName)
-
-      if (!director) {
-        throw new Error(`Director ${directorName} not found in movie ${movieId}`)
-      }
-
-      return {
-        photo: director.thumb ? `${director.thumb}?width=128&height=128&minSize=1&upscale=1&X-Plex-Token=${PLEX_TOKEN}` : undefined
-      }
-    },
-    enabled: !!directorName && !!movieId,
-  })
-}
-
 export const useCastStatistics = (items: PlexMediaItem[] | undefined, libraryId: string, topCastCount: string) => {
   return useQuery<CastStats[]>({
     queryKey: ['castStatistics', libraryId, topCastCount],
@@ -267,27 +241,6 @@ export const useCastStatistics = (items: PlexMediaItem[] | undefined, libraryId:
         .sort((a, b) => b.count - a.count) as CastStats[];
     },
     enabled: !!items,
-  })
-}
-
-// Add a new hook for fetching cast member details
-export const useCastMemberDetails = (castName: string, movieId: string) => {
-  return useQuery({
-    queryKey: ['castMemberDetails', castName, movieId],
-    queryFn: async () => {
-      const data = await fetchPlexAPI(`/library/metadata/${movieId}`)
-      const roles = data.MediaContainer.Metadata[0].Role || []
-      const role = roles.find((r: PlexRole) => r.tag === castName)
-
-      if (!role) {
-        throw new Error(`Cast member ${castName} not found in movie ${movieId}`)
-      }
-
-      return {
-        photo: role.thumb ? `${role.thumb}?width=128&height=128&minSize=1&upscale=1&X-Plex-Token=${PLEX_TOKEN}` : undefined
-      }
-    },
-    enabled: !!castName && !!movieId
   })
 }
 

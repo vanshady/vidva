@@ -1,17 +1,31 @@
 :root {
-  font-family: Inter, sans-serif;
-  font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-
+  color-scheme: dark;
+  font-feature-settings: 'liga' 1, 'calt' 1, 'cv11' 1;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-@supports (font-variation-settings: normal) {
-  :root { font-family: InterVariable, sans-serif; }
+
+body {
+  background: var(--mantine-color-dark-7);
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: rgba(242, 118, 46, 0.35);
+  color: #fff;
+}
+
+* {
+  scrollbar-color: var(--mantine-color-dark-4) transparent;
+}
+
+a {
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--mantine-color-vidva-5);
+  outline-offset: 2px;
 }

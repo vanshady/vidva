@@ -1,0 +1,326 @@
+/* Section card */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--mantine-color-dark-6);
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: var(--mantine-radius-lg);
+  padding: 18px 20px 16px;
+  min-width: 0;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-height: 32px;
+  margin-bottom: 12px;
+}
+
+.cardHead h2 {
+  margin: 0;
+}
+
+.cardAction {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Stat card */
+.stat {
+  display: block;
+  background: var(--mantine-color-dark-6);
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: var(--mantine-radius-lg);
+  padding: 16px 18px;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+a.stat:hover {
+  border-color: var(--mantine-color-dark-3);
+  background: var(--mantine-color-dark-5);
+}
+
+.statLabel {
+  font-size: 13px;
+  color: var(--mantine-color-dark-2);
+}
+
+.statValue {
+  font-size: 30px;
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+  color: var(--mantine-color-dark-0);
+}
+
+.statSub {
+  font-size: 12.5px;
+  color: var(--mantine-color-dark-2);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statSub b {
+  color: var(--mantine-color-vidva-4);
+  font-weight: 500;
+}
+
+/* Ranked rows (people, genres, countries) */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 22px auto minmax(0, 1fr) minmax(48px, 32%) 52px;
+  align-items: center;
+  gap: 14px;
+  min-height: 56px;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: var(--mantine-radius-md);
+  color: inherit;
+  text-decoration: none;
+}
+
+.row[data-noavatar] {
+  grid-template-columns: 22px minmax(0, 1fr) minmax(48px, 40%) 52px;
+  gap: 12px;
+  min-height: 34px;
+  padding: 4px 8px;
+}
+
+.row:not([data-noavatar]) .name,
+.row:not([data-noavatar]) .count {
+  font-size: 15px;
+}
+
+.row:not([data-noavatar]) .rank {
+  font-size: 13px;
+}
+
+.row:hover {
+  background: var(--mantine-color-dark-5);
+}
+
+.row:hover .name {
+  color: #fff;
+}
+
+.rank {
+  font-size: 12px;
+  color: var(--mantine-color-dark-2);
+  text-align: right;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--mantine-color-dark-0);
+}
+
+.track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--mantine-color-dark-4);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--mantine-color-vidva-5);
+  min-width: 2px;
+}
+
+.count {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mantine-color-dark-0);
+}
+
+/* Decade columns */
+.decades {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 6px;
+  align-items: end;
+  flex: 1;
+  min-height: 236px;
+  padding-top: 8px;
+}
+
+.decade {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  height: 100%;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--mantine-radius-sm);
+}
+
+.decadeCount {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--mantine-color-dark-0);
+  margin-bottom: 4px;
+}
+
+.decadeBar {
+  background: var(--mantine-color-vidva-5);
+  border-radius: 4px 4px 0 0;
+  min-height: 3px;
+  transition: background-color 150ms ease;
+}
+
+.decade:hover .decadeBar {
+  background: var(--mantine-color-vidva-4);
+}
+
+.decadeLabel {
+  font-size: 11px;
+  text-align: center;
+  color: var(--mantine-color-dark-2);
+  padding-top: 6px;
+  border-top: 1px solid var(--mantine-color-dark-4);
+  white-space: nowrap;
+}
+
+.decade:hover .decadeLabel {
+  color: var(--mantine-color-dark-0);
+}
+
+/* Poster grid */
+.posters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 20px 14px;
+}
+
+.poster {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.posterFrame {
+  aspect-ratio: 2 / 3;
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
+  background: var(--mantine-color-dark-5);
+  border: 1px solid var(--mantine-color-dark-4);
+  position: relative;
+  transition: border-color 150ms ease, transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.posterFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.poster:hover .posterFrame {
+  border-color: var(--mantine-color-vidva-5);
+  transform: translateY(-2px);
+}
+
+.posterFallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--mantine-color-dark-1);
+  background: linear-gradient(160deg, var(--mantine-color-dark-5), var(--mantine-color-dark-6));
+}
+
+.posterTitle {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--mantine-color-dark-0);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.posterMeta {
+  font-size: 12px;
+  color: var(--mantine-color-dark-2);
+  margin-top: 2px;
+}
+
+@media (max-width: 48em) {
+  .statSub {
+    white-space: normal;
+  }
+  .decades {
+    gap: 3px;
+    min-height: 200px;
+  }
+  .decadeCount {
+    font-size: 10px;
+  }
+  .decadeLabel {
+    font-size: 10px;
+    overflow: visible;
+  }
+  .decade:nth-child(even) .decadeLabel {
+    color: transparent;
+  }
+  .posters {
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 16px 10px;
+  }
+  .row {
+    grid-template-columns: 22px auto minmax(0, 1fr) 44px;
+  }
+  .row[data-noavatar] {
+    grid-template-columns: 22px minmax(0, 1fr) 30% 44px;
+  }
+  .row:not([data-noavatar]) .track {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .posterFrame, .decadeBar, .stat {
+    transition: none;
+  }
+  .poster:hover .posterFrame {
+    transform: none;
+  }
+}

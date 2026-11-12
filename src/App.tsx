@@ -1,41 +1,42 @@
-import { Routes, Route, useSearchParams } from 'react-router-dom'
-import { Container } from '@mantine/core'
-import { Header } from './components/layout/Header'
-import { CategoryMovies } from './pages/CategoryMovies'
-import { PersonMovies } from './pages/PersonMovies'
-import { HomePage } from './pages/HomePage'
-import { useState } from 'react'
+import { useEffect } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { AppLayout } from './components/layout/AppLayout'
+import { OverviewPage } from './pages/OverviewPage'
+import { IndexPage } from './pages/IndexPage'
+import { DetailPage } from './pages/DetailPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 
+// New pages start at the top; browser back/forward keeps its own restoration.
+const ScrollToTop = () => {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
+
+// Old pre-1.3 links used ?castsVisibleCount / ?directorsVisibleCount on the
+// dashboard; they still resolve because the overview ignores unknown params.
 function App() {
-  const [searchParams] = useSearchParams()
-  const [selectedLibrary, setSelectedLibrary] = useState(searchParams.get('libraryId') || '')
-
   return (
-    <Container size="xl" p="xl" w="100%">
-      <Header />
+    <AppLayout>
+      <ScrollToTop />
       <Routes>
-        <Route path="/" element={
-          <HomePage
-            selectedLibrary={selectedLibrary}
-            onLibraryChange={setSelectedLibrary}
-          />
-        } />
-        <Route
-          path="/cast/:name"
-          element={
-            <PersonMovies
-              type="cast"
-              libraryId={selectedLibrary}
-              topCastCount={searchParams.get('topCastCount')}
-            />
-          }
-        />
-        <Route path="/director/:name" element={<PersonMovies type="director" libraryId={selectedLibrary} />} />
-        <Route path="/genre/:name" element={<CategoryMovies type="genre" title="Genre" libraryId={selectedLibrary} />} />
-        <Route path="/country/:name" element={<CategoryMovies type="country" title="Country" libraryId={selectedLibrary} />} />
-        <Route path="/decade/:name" element={<CategoryMovies type="decade" title="Decade" libraryId={selectedLibrary} />} />
+        <Route path="/" element={<OverviewPage />} />
+        <Route path="/directors" element={<IndexPage key="director" dimension="director" />} />
+        <Route path="/cast" element={<IndexPage key="cast" dimension="cast" />} />
+        <Route path="/decades" element={<IndexPage key="decade" dimension="decade" />} />
+        <Route path="/genres" element={<IndexPage key="genre" dimension="genre" />} />
+        <Route path="/countries" element={<IndexPage key="country" dimension="country" />} />
+        <Route path="/director/:name" element={<DetailPage key="director" dimension="director" />} />
+        <Route path="/cast/:name" element={<DetailPage key="cast" dimension="cast" />} />
+        <Route path="/decade/:name" element={<DetailPage key="decade" dimension="decade" />} />
+        <Route path="/genre/:name" element={<DetailPage key="genre" dimension="genre" />} />
+        <Route path="/country/:name" element={<DetailPage key="country" dimension="country" />} />
+        <Route path="/index.html" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </Container>
+    </AppLayout>
   )
 }
 
