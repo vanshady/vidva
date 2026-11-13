@@ -246,6 +246,7 @@ Vertical HTML columns, one per decade, sharing the row's color logic.
 ### Poster Grid
 - 2:3 frames, 8px radius, hairline border, Raised Graphite placeholder; when no image exists, the title sits bottom-left in Ink Soft over a dark gradient.
 - Hover: border turns Logo Orange and the frame lifts 2px.
+- Watched ribbon: a 30px Logo Orange right triangle clipped into the top-right corner with a 12px Sidebar Black check, after Plex's corner marker. Films show it once viewed; shows only when every episode is watched. It is the one status use of the accent, permitted because it sits on the poster image, never on a surface.
 - Title (13px/500, two-line clamp) and year (12px, muted) sit below the frame.
 
 ## Do's and Don'ts

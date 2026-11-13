@@ -1,7 +1,8 @@
 import { VisuallyHidden } from '@mantine/core'
+import { IconCheck } from '@tabler/icons-react'
 import { useState } from 'react'
 import { PLEX_SERVER_ID, PlexMediaItem } from '../../services/plexService'
-import { plexImageUrl } from '../../lib/collection'
+import { isWatched, plexImageUrl } from '../../lib/collection'
 import classes from './data.module.css'
 
 const plexWebUrl = (ratingKey: string) =>
@@ -10,16 +11,22 @@ const plexWebUrl = (ratingKey: string) =>
 const Poster = ({ item }: { item: PlexMediaItem }) => {
   const [failed, setFailed] = useState(false)
   const src = plexImageUrl(item.thumb, 240, 360)
+  const watched = isWatched(item)
   return (
     <a href={plexWebUrl(item.ratingKey)} target="_blank" rel="noopener noreferrer" className={classes.poster}>
       <div className={classes.posterFrame}>
         {src && !failed
           ? <img src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
           : <div className={classes.posterFallback} aria-hidden>{item.title}</div>}
+        {watched && (
+          <span className={classes.watchedRibbon} aria-hidden>
+            <IconCheck size={12} stroke={3} />
+          </span>
+        )}
       </div>
       <div className={classes.posterTitle}>{item.title}</div>
       <div className={classes.posterMeta}>{item.year ?? 'Year unknown'}</div>
-      <VisuallyHidden>(opens in Plex)</VisuallyHidden>
+      <VisuallyHidden>{watched ? '(watched, opens in Plex)' : '(opens in Plex)'}</VisuallyHidden>
     </a>
   )
 }

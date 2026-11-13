@@ -265,6 +265,23 @@ a.stat:hover {
   background: linear-gradient(160deg, var(--mantine-color-dark-5), var(--mantine-color-dark-6));
 }
 
+/* Plex-style corner ribbon: a right triangle folded over the top-right corner. */
+.watchedRibbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background: var(--mantine-color-vidva-5);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  color: var(--mantine-color-dark-8);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 3px 3px 0 0;
+  pointer-events: none;
+}
+
 .posterTitle {
   margin-top: 8px;
   font-size: 13px;

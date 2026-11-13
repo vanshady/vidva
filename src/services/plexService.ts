@@ -12,6 +12,9 @@ export interface PlexMediaItem {
   title: string
   year?: number
   viewCount?: number
+  // Set on show items: total episodes and how many of them are watched.
+  leafCount?: number
+  viewedLeafCount?: number
   type: string
   thumb?: string
   Genre?: { tag: string }[]

@@ -36,6 +36,15 @@ export const plexImageUrl = (thumb: string | undefined, width?: number, height?:
 }
 
 /**
+ * Watched by the Plex account behind the server token. A show counts only once
+ * every episode is watched, matching how Plex clears its unwatched marker.
+ */
+export const isWatched = (item: PlexMediaItem) =>
+  item.type === 'show'
+    ? !!item.leafCount && (item.viewedLeafCount ?? 0) >= item.leafCount
+    : (item.viewCount ?? 0) > 0
+
+/**
  * Everything the dashboard reads about the active library. For TV libraries,
  * people are counted per episode and runtime is summed across episodes;
  * genres, countries and decades come from the shows themselves.
@@ -122,11 +131,14 @@ export const titlesFor = (collection: Collection, dimension: Dimension, name: st
 
     if (!isTv) return personItems.filter(matches)
 
+    // Prefer the show's own listing entry: it carries watch progress the
+    // episode's grandparent fields don't.
+    const showsByKey = new Map(items.map(show => [show.ratingKey, show]))
     const shows = new Map<string, PlexMediaItem>()
     personItems.filter(matches).forEach(ep => {
       const key = ep.grandparentRatingKey
       if (key && !shows.has(key)) {
-        shows.set(key, {
+        shows.set(key, showsByKey.get(key) ?? {
           ratingKey: key,
           title: ep.grandparentTitle ?? ep.title,
           year: ep.grandparentYear,
